@@ -1,0 +1,49 @@
+
+<html>
+
+<head>
+<style>
+h1 {text-align: center;}
+p {text-align: center;}
+div {text-align: left;}
+</style>
+    <title>LafKin Suspension Simulator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
+<script type="text/javascript" src="https://rawgit.com/lmccart/p5.js/master/lib/addons/p5.dom.js"></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+<!-- <script src="https://cdn.jsdelivr.net/gh/nicolaspanel/numjs@0.15.1/dist/numjs.min.js"></script> -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript"
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script src="num.min.js"></script>
+
+</head>
+<body>
+    <h1>Lafayette MotorSports Suspension Simulator</h1>
+<div id='sketch-holder'></div>
+  <div class="slidecontainer">
+Wheel  $ \Delta z $:
+  <input type="range" min="-50" max="50" value="0" class="slider" id="wheelslider">
+</div>
+<button onclick="solveSuspension()">Solve Once</button>
+<input type="checkbox" id="autoSolve" value="auto_Solve"> AutoSolve <br>
+
+<script src="Front_Susp.js"></script>
+
+
+<!-- Attempt to make a canvas for a plot: -->
+<!-- </div>
+    <div id="myCanvases" style="position:absolute; top:0px; left:0px; width:0px; height:0px; opacity:0"></div>
+<div> -->
+
+
+</body>
+</html>
