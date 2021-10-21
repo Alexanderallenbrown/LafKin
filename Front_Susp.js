@@ -53,11 +53,11 @@ rackslider.oninput = function(){
   //print("wheel pos udpate: " +str(this.value))
 }
 
-//callbacks for these functions:
-rollslider.oninput = function(){
-  chassisroll = this.value/1000.0;
-  //print("wheel pos udpate: " +str(this.value))
-}
+// //callbacks for these functions:
+// rollslider.oninput = function(){
+//   chassisroll = this.value/1000.0;
+//   //print("wheel pos udpate: " +str(this.value))
+// }
 
 function windowResized() {
   resizeCanvas(windowWidth/2, 750);
