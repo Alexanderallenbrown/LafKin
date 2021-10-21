@@ -11,6 +11,7 @@ div {text-align: left;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
 <script type="text/javascript" src="https://rawgit.com/lmccart/p5.js/master/lib/addons/p5.dom.js"></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <!-- <script src="https://cdn.jsdelivr.net/gh/nicolaspanel/numjs@0.15.1/dist/numjs.min.js"></script> -->
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
@@ -28,22 +29,79 @@ div {text-align: left;}
 </head>
 <body>
     <h1>Lafayette MotorSports Suspension Simulator</h1>
-<div id='sketch-holder'></div>
-  <div class="slidecontainer">
-Wheel  $ \Delta z $:
-  <input type="range" min="-50" max="50" value="0" class="slider" id="wheelslider">
-</div>
-<button onclick="solveSuspension()">Solve Once</button>
-<input type="checkbox" id="autoSolve" value="auto_Solve"> AutoSolve <br>
+
+    <div style="width:100vw; display: table">
+      <div style="display: table-row; height: 30vw">
+        <div id="sketch-holder" style="width: 50vw; display: table-cell; height: auto; padding:1em; background: none">
+        </div>
+        <div style="margin-left: 50vw; background: green; display: table-cell; background: none; padding: 2em">
+            <!-- Attempt to make a canvas for a plot: -->
+            <canvas id="chartCanvas" ></canvas>
+        </div>
+      </div>
+        <div style="display: table-row">
+
+              <div style="display: table-cell; width: 50vw;" >
+                <h2> Simulation Control </h2> <br>
+                  <div class="slidecontainer">
+                  Wheel  $ \Delta z $:
+                  <input type="range" min="-50" max="50" value="0" class="slider" id="wheelslider">
+            </div>
+            <button onclick="solveSuspension()">Solve Once</button>
+            <input type="checkbox" id="autoSolve" value="auto_Solve"> AutoSolve <br>
+              </div>
+                <div style="display: table-cell; margin-left: 50vw; padding: 2em">
+                <h2>Plotting Options</h2> <br>
+                <label for="y_axis">Dependent Variable to Plot</label>
+                <select name="y_axis" id="chart_y_axis">
+                  <option value="Camber">Camber</option>
+                  <option value="Steer">Steer</option>
+                </select>
+
+                <label for="x_axis">Independent Variable to Plot</label>
+                <select name="x_axis" id="chart_x_axis">
+                  <option value="Jounce">Jounce</option>
+                  <option value="Roll">Roll</option>
+                </select>
+                <br>
+                min/increment/max
+                <textarea id="input_min" name="min" rows="1" cols="10">-0.0254</textarea>
+                <textarea id="input_inc" name="increment" rows="1" cols="10">0.00254</textarea>
+                <textarea id="input_max" name="max" rows="1" cols="10">0.0254</textarea>
+                <br>
+                <button onclick="generateNewPlot()">Generate Plot</button>
+                </div>
+      </div>
+              
+    </div>
+
+
+
+            
+
+<!--     <div style="width: 100%; display: table;">
+        <div style="display: table-row; height: 100px;">
+            <div style="width: 50%; display: table-cell; background: green;">
+                Left Div 
+            </div>
+            <div style="display: table-cell; background: blue;"> 
+                Right Div
+            </div>
+        </div>
+    </div> -->
+
+
+
+<hr>
+
+<hr>
+<h2>Geometry:</h2>
 
 <script src="Front_Susp.js"></script>
-
-
-<!-- Attempt to make a canvas for a plot: -->
-<!-- </div>
-    <div id="myCanvases" style="position:absolute; top:0px; left:0px; width:0px; height:0px; opacity:0"></div>
-<div> -->
-
-
 </body>
 </html>
+
+
+
+<!-- TODO: Put plot and 3D window side by side: https://coder-coder.com/display-divs-side-by-side/ -->
+<!-- TODO: Get different pages of options: https://stackoverflow.com/questions/37995581/how-to-replace-div-content-for-button-click-on-same-page-in-bootstrap -->

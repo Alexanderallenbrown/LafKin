@@ -13,10 +13,11 @@
 //origin of an a-arm is fixed to rear inner point
 const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
-//for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
-const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
 const chassis = [[0,0,0],[.3,0,0],[0,0.05,.18],[.3,0.05,.18],[-.05,0,0]]
+//for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
+const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
+
 const tierodlength = 0.55
 
 var sinphi = 0
@@ -34,7 +35,6 @@ var dt = .015
 //variables to interact with the user:
 var wheelslider = document.getElementById("wheelslider")
 var autosolve_checkbox = document.getElementById("autoSolve")
-
 var wheelpos = 0;
 
 
@@ -45,19 +45,177 @@ wheelslider.oninput = function(){
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, 750);
+  resizeCanvas(windowWidth/2, 750);
   susp.fbscale = 2*windowWidth
 }
 
 
+
+///// VARIABLES FOR PLOTTING AND DATA COLLECTION
+var suspPlot;
+var globalXData = [];
+var globalYData = [];
+var globalCurrentX = [];
+var globalCurrentY = [];
+var input_min = 0;
+var input_max = 0;
+var input_increment = 0;
+var simlength = 0;
+// var simdata = '';
+// var chartdata = new Object();
+// var chartdata ={};
+
+
+//////// VARIABLE TO LOCK OUT USER INPUT
+var simulating = false;
+
+
+
+function range(start, stop, step) {
+    if (typeof stop == 'undefined') {
+        // one param defined
+        stop = start;
+        start = 0;
+    }
+
+    if (typeof step == 'undefined') {
+        step = 1;
+    }
+
+    if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
+        return [];
+    }
+
+    var result = [];
+    for (var i = start; step > 0 ? i < stop : i > stop; i += step) {
+        result.push(i);
+    }
+
+    return result;
+};
+
+
+function runJounceSim(min,max){
+  /// assume for now it's just jounce.... but in future, check to see what type of plot we want.
+
+}
+
+function plotCallback(){
+  //// check drop-down to see what plot we want
+
+  //// first run sim for data
+
+  /// then put data into format for chart
+
+  /// then update chart data, title, plot, whatever
+
+
+  /// then update the chart.
+}
+
+
+//call this plot when options have changed.
+function generateNewPlot(){
+  //get y axis and x axis from dropdown. Use if statements to generate data and labels
+  globalYData = [];
+  globalXData = [];
+  input_min = float(document.getElementById("input_min").value);
+  input_max = float(document.getElementById("input_max").value);
+  input_increment = float(document.getElementById("input_inc").value);
+  simlength = int((input_max-input_min)/input_increment);
+  print("Sim Length: "+str(simlength))
+  globalXData.push(input_min);
+  simulating = true;
+}
+
+
+
+/////// this function puts data in the format required by chartJS.
+/////// you can update the chart's data with the result of this function, then call chart.update()
+function generateData(xdata,ydata) {
+            var data = [];
+            for (var i = 0; i < ydata.length; i++) {
+                data.push({
+                    x: xdata[i],
+                    y: ydata[i]
+                });
+            }
+            return data;
+        }
+
+
+/////////////// PLOT PLOTTING plot plotting make chart
+function initLineChart(data, myTitle, xlabel, ylabel) {
+        canv = document.getElementById("chartCanvas");
+        var config = {  // Chart.js configuration, including the DATASETS data from the model data
+          type: "scatter",
+          title: myTitle,
+          data: {
+        datasets: [{
+            // xAxisID: "Time (s)",
+            // yAxisID: "Output",
+            pointBackgroundColor: 'rgba(0, 0, 0, 1)',
+            showLine: true,
+            borderColor: 'rgba(0, 0, 0, 1)',
+            fill: false,
+            label: '',
+            data: data
+        }]
+    },
+          options: {
+             scales: {
+            yAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: (ylabel),
+              }
+            }],
+             xAxes: [{
+              scaleLabel: {
+                display: true,
+                labelString: (xlabel),
+              }
+            }]
+        },
+             title: {
+            display: true,
+            text: myTitle
+        }
+          }
+        };
+
+        suspPlot = new Chart(canv, config);
+
+        return canv;
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////
+
 function setup() {
 
-  var cnv = createCanvas(windowWidth, 500,WEBGL);
+  var cnv = createCanvas(windowWidth/2, 500,WEBGL);
   cnv.parent('sketch-holder')
+  initLineChart([],"hello","hi","howdy")
   susp = new Suspension(lowerA,upperA,upright,chassis,tierodlength);
   susp.draw()
   print(wheelslider)
   print(autosolve_checkbox)
+  camera(-1000,-1000,3000,-500,0,0,0,1,0)
 }
 
 function draw() {
@@ -68,36 +226,87 @@ function draw() {
   orbitControl();
   fill(0)
   stroke(0)
-  //normalMaterial();
-  // susp.lowerAGlobal[5] = .1*sin(millis()/1000.0)
-  //sinphi+=.5*dt
 
-  //get the wheel position from the slider
-  print(wheelpos)
-  //use the slider to update the wheel position.
-  susp.uprightGlobal[2] = wheelpos
+  
 
-  //see if we want auto-solve on
-  var autosolve_now = autosolve_checkbox.checked;
-  if(autosolve_now){
-      susp.solve();
+
+  if(!simulating){
+      //see if we want auto-solve on
+      //use the slider to update the wheel position.
+      susp.uprightGlobal[2] = wheelpos
+      var autosolve_now = autosolve_checkbox.checked;
+      if(autosolve_now){
+          susp.solve();
+      }
+
+      susp.draw();
+  }
+  else{
+      
+      ////we are supposed to be running an automatic simulation now.
+      simstr = "simulating"
+      if(globalXData.length<=simlength){
+        // simstr+="."
+        // print(simstr)
+        // print(globalXData.length)
+        ////check to see what the independent variable is
+        simxtype = document.getElementById("chart_x_axis").value;
+        // print("Read Sim X type: "+simxtype)
+        if(simxtype == "Jounce"){
+          //now we set the simulation's input to the last element in the input array
+          susp.uprightGlobal[2] = globalXData.slice(-1)[0]
+        }
+        else{
+          simulating = false;
+          print("Simtype Not Supported (independent)")
+        }
+        ////now the simulation should be set up to solve with correct input.
+        susp.update();
+
+        ///// now the simulation should be updated. Add the desired output to the global Y data vector
+        simytype = document.getElementById("chart_y_axis").value;
+        if(simytype== "Camber"){
+          globalYData.push(-(susp.uprightGlobal[3]%(2*PI)))
+        }
+        else if(simytype == "Steer"){
+          globalYData.push((susp.uprightGlobal[5]%(2*PI)))
+        }
+        else{
+          print("Simtype Not Supported (dependent)")
+        }
+        //add a new element to globalXdata if we're not at the end of the simulation.
+        //if(!(globalXData.length==simlength)){
+        globalXData.push(globalXData.slice(-1)[0]+input_increment);
+        //}
+      }
+      //turn off sim
+      else{
+        //this means that the simulation just ended. turn these into data for the chart.
+        simulating = false;
+        newChartData = generateData(globalXData,globalYData);
+        suspPlot.data.datasets[0].data = newChartData;
+        suspPlot.update();
+      }
   }
 
-  susp.draw();
 
+
+
+
+
+
+/////// END DRAW ////////
 }
 
 function varcopy(x) {
     return JSON.parse( JSON.stringify(x) );
 }
 
-
-// function keyPressed(){
-//   susp.update();
-// }
-
+////callback for the "solve once" button
 function solveSuspension(){
   susp.update()
+  // susp.solveRough()
+  // susp.draw()
 }
 
 
@@ -117,25 +326,21 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   var uprightGlobal = [.15,.4,0,.25,0,0]
 
   //print(lowerAGlobal)
-
   this.lowerAGlobal = lowerAGlobal
   this.upperAGlobal = upperAGlobal
   this.chassisGlobal= chassisGlobal
   this.uprightGlobal = uprightGlobal
 
-  // print(this.lowerAGlobal[0])
-
   //display-level variables
   this.fbscale = 2*windowWidth //adjust this for drawing
   this.ox = 200 //adjust this for drawing
   this.oy = 100 //adjust this for drawing
-  this.oz = -100 //adjust this for drawing
+  this.oz = -300 //adjust this for drawing
   this.debug = true
   
   //guesses for q, our dependent gen coords
   //this.q = [this.lowerAglobal[3],this.lowerAGlobal[4],this.lowerAGlobal[5],this.upperAGlobal[3],this.upperAGlobal[4],this.upperAGlobal[5],this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5],this.uprightGlobal[0],this.uprightGlobal[1]]
   //constraint values
-  this.constraints = math.matrix([[1],[1]])//this.calcConstraints(this.q)
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .005
   this.iter_limit = 25
@@ -281,6 +486,11 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
     d_chassis = this.calcGlobal(this.chassisGlobal,this.chassis[4])
     phi13 = (math.pow(d_ua[0]-d_chassis[0],2)+math.pow(d_ua[1]-d_chassis[1],2)+math.pow(d_ua[1]-d_chassis[1],2)) - math.pow(this.tierodlength,2)
 
+
+    // //calculate dot product between upright X and global X to keep it from flipping wildly.
+    // uprightAxisGlobal = this.calcGlobal([0,0,0,this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5]],[1,0,0])
+    // phi14 = uprightAxisGlobal[0] - 1
+
     constraints = math.matrix([[phi1],[phi2],[phi3],[phi4],[phi5],[phi6],[phi7],[phi8],[phi9],[phi10],[phi11],[phi12],[phi13]])
 
     // var fx = this.r2*cos(this.t2)+this.r3*cos(math.subset(q,math.index(0,0))) - this.r4*cos(math.subset(q,math.index(1,0))) - this.r1*cos(this.t1)
@@ -318,7 +528,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
 }
 
 this.iterate = function(){
-
+  //this.getqArrayFromGlobals()
   Jac = this.calcJac()
   //TRY using the SVD to compute a pseudoinverse.
   svdjac = svd(Jac._data)
@@ -356,6 +566,12 @@ this.iterate = function(){
   this.updateGlobalPositionsFromQ(this.q)
 }
 
+this.solveRough = function(){
+  var residthresh_save = this.resid_thresh
+  this.resid_thresh = residthresh_save*2
+  this.solve()
+  this.resid_thresh = residthresh_save
+}
 
 this.solve = function(){
   //calculate initial value of constraints
@@ -384,6 +600,7 @@ this.solve = function(){
 
 this.update = function(){
   //update independent driving variable
+  this.q = this.getqArrayFromGlobals();
   this.solve();
   
   //debug
@@ -558,307 +775,295 @@ this.drawChassis = function(){
 
 
 
-
-// function line3d(x1, y1, z1, x2,y2, z2){
-//   beginShape();
-//   translate(x1,y1,z1);
-//   vertex(x1,y1,z1);
-//   translate(x2,y2,z2);
-//   vertex(x2,y2,z2);  
-//   endShape();
-// }
-
-
-
 //following taken from: https://github.com/sloisel/numeric/blob/master/src/svd.js
 svd= function svd(A) {
-    var temp;
-//Compute the thin SVD from G. H. Golub and C. Reinsch, Numer. Math. 14, 403-420 (1970)
-  var prec= Math.pow(2,-52) // assumes double prec
-  var tolerance= 1.e-64/prec;
-  var itmax= 50;
-  var c=0;
-  var i=0;
-  var j=0;
-  var k=0;
-  var l=0;
-  
-  var u= varcopy(A);
-  var m= u.length;
-  
-  var n= u[0].length;
-  
-  if (m < n) throw "Need more rows than columns"
-  
-  var e = new Array(n);
-  var q = new Array(n);
-  for (i=0; i<n; i++) e[i] = q[i] = 0.0;
-  var v = rep([n,n],0);
-//  v.zero();
-  
-  function pythag(a,b)
-  {
-    a = Math.abs(a)
-    b = Math.abs(b)
-    if (a > b)
-      return a*Math.sqrt(1.0+(b*b/a/a))
-    else if (b == 0.0) 
-      return a
-    return b*Math.sqrt(1.0+(a*a/b/b))
-  }
+      var temp;
+  //Compute the thin SVD from G. H. Golub and C. Reinsch, Numer. Math. 14, 403-420 (1970)
+    var prec= Math.pow(2,-52) // assumes double prec
+    var tolerance= 1.e-64/prec;
+    var itmax= 50;
+    var c=0;
+    var i=0;
+    var j=0;
+    var k=0;
+    var l=0;
+    
+    var u= varcopy(A);
+    var m= u.length;
+    
+    var n= u[0].length;
+    
+    if (m < n) throw "Need more rows than columns"
+    
+    var e = new Array(n);
+    var q = new Array(n);
+    for (i=0; i<n; i++) e[i] = q[i] = 0.0;
+    var v = rep([n,n],0);
+  //  v.zero();
+    
+    function pythag(a,b)
+    {
+      a = Math.abs(a)
+      b = Math.abs(b)
+      if (a > b)
+        return a*Math.sqrt(1.0+(b*b/a/a))
+      else if (b == 0.0) 
+        return a
+      return b*Math.sqrt(1.0+(a*a/b/b))
+    }
 
-  //Householder's reduction to bidiagonal form
+    //Householder's reduction to bidiagonal form
 
-  var f= 0.0;
-  var g= 0.0;
-  var h= 0.0;
-  var x= 0.0;
-  var y= 0.0;
-  var z= 0.0;
-  var s= 0.0;
-  
-  for (i=0; i < n; i++)
-  { 
-    e[i]= g;
-    s= 0.0;
-    l= i+1;
-    for (j=i; j < m; j++) 
-      s += (u[j][i]*u[j][i]);
-    if (s <= tolerance)
-      g= 0.0;
-    else
+    var f= 0.0;
+    var g= 0.0;
+    var h= 0.0;
+    var x= 0.0;
+    var y= 0.0;
+    var z= 0.0;
+    var s= 0.0;
+    
+    for (i=0; i < n; i++)
     { 
-      f= u[i][i];
-      g= Math.sqrt(s);
-      if (f >= 0.0) g= -g;
-      h= f*g-s
-      u[i][i]=f-g;
-      for (j=l; j < n; j++)
-      {
-        s= 0.0
-        for (k=i; k < m; k++) 
-          s += u[k][i]*u[k][j]
-        f= s/h
-        for (k=i; k < m; k++) 
-          u[k][j]+=f*u[k][i]
-      }
-    }
-    q[i]= g
-    s= 0.0
-    for (j=l; j < n; j++) 
-      s= s + u[i][j]*u[i][j]
-    if (s <= tolerance)
-      g= 0.0
-    else
-    { 
-      f= u[i][i+1]
-      g= Math.sqrt(s)
-      if (f >= 0.0) g= -g
-      h= f*g - s
-      u[i][i+1] = f-g;
-      for (j=l; j < n; j++) e[j]= u[i][j]/h
-      for (j=l; j < m; j++)
+      e[i]= g;
+      s= 0.0;
+      l= i+1;
+      for (j=i; j < m; j++) 
+        s += (u[j][i]*u[j][i]);
+      if (s <= tolerance)
+        g= 0.0;
+      else
       { 
-        s=0.0
-        for (k=l; k < n; k++) 
-          s += (u[j][k]*u[i][k])
-        for (k=l; k < n; k++) 
-          u[j][k]+=s*e[k]
-      } 
-    }
-    y= Math.abs(q[i])+Math.abs(e[i])
-    if (y>x) 
-      x=y
-  }
-  
-  // accumulation of right hand gtransformations
-  for (i=n-1; i != -1; i+= -1)
-  { 
-    if (g != 0.0)
-    {
-      h= g*u[i][i+1]
-      for (j=l; j < n; j++) 
-        v[j][i]=u[i][j]/h
-      for (j=l; j < n; j++)
-      { 
-        s=0.0
-        for (k=l; k < n; k++) 
-          s += u[i][k]*v[k][j]
-        for (k=l; k < n; k++) 
-          v[k][j]+=(s*v[k][i])
-      } 
-    }
-    for (j=l; j < n; j++)
-    {
-      v[i][j] = 0;
-      v[j][i] = 0;
-    }
-    v[i][i] = 1;
-    g= e[i]
-    l= i
-  }
-  
-  // accumulation of left hand transformations
-  for (i=n-1; i != -1; i+= -1)
-  { 
-    l= i+1
-    g= q[i]
-    for (j=l; j < n; j++) 
-      u[i][j] = 0;
-    if (g != 0.0)
-    {
-      h= u[i][i]*g
-      for (j=l; j < n; j++)
-      {
-        s=0.0
-        for (k=l; k < m; k++) s += u[k][i]*u[k][j];
-        f= s/h
-        for (k=i; k < m; k++) u[k][j]+=f*u[k][i];
-      }
-      for (j=i; j < m; j++) u[j][i] = u[j][i]/g;
-    }
-    else
-      for (j=i; j < m; j++) u[j][i] = 0;
-    u[i][i] += 1;
-  }
-  
-  // diagonalization of the bidiagonal form
-  prec= prec*x
-  for (k=n-1; k != -1; k+= -1)
-  {
-    for (var iteration=0; iteration < itmax; iteration++)
-    { // test f splitting
-      var test_convergence = false
-      for (l=k; l != -1; l+= -1)
-      { 
-        if (Math.abs(e[l]) <= prec)
-        { test_convergence= true
-          break 
+        f= u[i][i];
+        g= Math.sqrt(s);
+        if (f >= 0.0) g= -g;
+        h= f*g-s
+        u[i][i]=f-g;
+        for (j=l; j < n; j++)
+        {
+          s= 0.0
+          for (k=i; k < m; k++) 
+            s += u[k][i]*u[k][j]
+          f= s/h
+          for (k=i; k < m; k++) 
+            u[k][j]+=f*u[k][i]
         }
-        if (Math.abs(q[l-1]) <= prec)
-          break 
       }
-      if (!test_convergence)
-      { // cancellation of e[l] if l>0
-        c= 0.0
-        s= 1.0
-        var l1= l-1
-        for (i =l; i<k+1; i++)
+      q[i]= g
+      s= 0.0
+      for (j=l; j < n; j++) 
+        s= s + u[i][j]*u[i][j]
+      if (s <= tolerance)
+        g= 0.0
+      else
+      { 
+        f= u[i][i+1]
+        g= Math.sqrt(s)
+        if (f >= 0.0) g= -g
+        h= f*g - s
+        u[i][i+1] = f-g;
+        for (j=l; j < n; j++) e[j]= u[i][j]/h
+        for (j=l; j < m; j++)
         { 
-          f= s*e[i]
-          e[i]= c*e[i]
-          if (Math.abs(f) <= prec)
-            break
-          g= q[i]
-          h= pythag(f,g)
-          q[i]= h
-          c= g/h
-          s= -f/h
-          for (j=0; j < m; j++)
-          { 
-            y= u[j][l1]
-            z= u[j][i]
-            u[j][l1] =  y*c+(z*s)
-            u[j][i] = -y*s+(z*c)
-          } 
+          s=0.0
+          for (k=l; k < n; k++) 
+            s += (u[j][k]*u[i][k])
+          for (k=l; k < n; k++) 
+            u[j][k]+=s*e[k]
         } 
       }
-      // test f convergence
-      z= q[k]
-      if (l== k)
-      { //convergence
-        if (z<0.0)
-        { //q[k] is made non-negative
-          q[k]= -z
-          for (j=0; j < n; j++)
-            v[j][k] = -v[j][k]
-        }
-        break  //break out of iteration loop and move on to next k value
-      }
-      if (iteration >= itmax-1)
-        throw 'Error: no convergence.'
-      // shift from bottom 2x2 minor
-      x= q[l]
-      y= q[k-1]
-      g= e[k-1]
-      h= e[k]
-      f= ((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y)
-      g= pythag(f,1.0)
-      if (f < 0.0)
-        f= ((x-z)*(x+z)+h*(y/(f-g)-h))/x
-      else
-        f= ((x-z)*(x+z)+h*(y/(f+g)-h))/x
-      // next QR transformation
-      c= 1.0
-      s= 1.0
-      for (i=l+1; i< k+1; i++)
-      { 
-        g= e[i]
-        y= q[i]
-        h= s*g
-        g= c*g
-        z= pythag(f,h)
-        e[i-1]= z
-        c= f/z
-        s= h/z
-        f= x*c+g*s
-        g= -x*s+g*c
-        h= y*s
-        y= y*c
-        for (j=0; j < n; j++)
-        { 
-          x= v[j][i-1]
-          z= v[j][i]
-          v[j][i-1] = x*c+z*s
-          v[j][i] = -x*s+z*c
-        }
-        z= pythag(f,h)
-        q[i-1]= z
-        c= f/z
-        s= h/z
-        f= c*g+s*y
-        x= -s*g+c*y
-        for (j=0; j < m; j++)
-        {
-          y= u[j][i-1]
-          z= u[j][i]
-          u[j][i-1] = y*c+z*s
-          u[j][i] = -y*s+z*c
-        }
-      }
-      e[l]= 0.0
-      e[k]= f
-      q[k]= x
-    } 
-  }
-    
-  //vt= transpose(v)
-  //return (u,q,vt)
-  for (i=0;i<q.length; i++) 
-    if (q[i] < prec) q[i] = 0
-    
-  //sort eigenvalues  
-  for (i=0; i< n; i++)
-  {  
-  //writeln(q)
-   for (j=i-1; j >= 0; j--)
-   {
-    if (q[j] < q[i])
-    {
-  //  writeln(i,'-',j)
-     c = q[j]
-     q[j] = q[i]
-     q[i] = c
-     for(k=0;k<u.length;k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
-     for(k=0;k<v.length;k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
-//     u.swapCols(i,j)
-//     v.swapCols(i,j)
-     i = j     
+      y= Math.abs(q[i])+Math.abs(e[i])
+      if (y>x) 
+        x=y
     }
-   }  
-  }
-  
-  return {U:u,S:q,V:v}
+    
+    // accumulation of right hand gtransformations
+    for (i=n-1; i != -1; i+= -1)
+    { 
+      if (g != 0.0)
+      {
+        h= g*u[i][i+1]
+        for (j=l; j < n; j++) 
+          v[j][i]=u[i][j]/h
+        for (j=l; j < n; j++)
+        { 
+          s=0.0
+          for (k=l; k < n; k++) 
+            s += u[i][k]*v[k][j]
+          for (k=l; k < n; k++) 
+            v[k][j]+=(s*v[k][i])
+        } 
+      }
+      for (j=l; j < n; j++)
+      {
+        v[i][j] = 0;
+        v[j][i] = 0;
+      }
+      v[i][i] = 1;
+      g= e[i]
+      l= i
+    }
+    
+    // accumulation of left hand transformations
+    for (i=n-1; i != -1; i+= -1)
+    { 
+      l= i+1
+      g= q[i]
+      for (j=l; j < n; j++) 
+        u[i][j] = 0;
+      if (g != 0.0)
+      {
+        h= u[i][i]*g
+        for (j=l; j < n; j++)
+        {
+          s=0.0
+          for (k=l; k < m; k++) s += u[k][i]*u[k][j];
+          f= s/h
+          for (k=i; k < m; k++) u[k][j]+=f*u[k][i];
+        }
+        for (j=i; j < m; j++) u[j][i] = u[j][i]/g;
+      }
+      else
+        for (j=i; j < m; j++) u[j][i] = 0;
+      u[i][i] += 1;
+    }
+    
+    // diagonalization of the bidiagonal form
+    prec= prec*x
+    for (k=n-1; k != -1; k+= -1)
+    {
+      for (var iteration=0; iteration < itmax; iteration++)
+      { // test f splitting
+        var test_convergence = false
+        for (l=k; l != -1; l+= -1)
+        { 
+          if (Math.abs(e[l]) <= prec)
+          { test_convergence= true
+            break 
+          }
+          if (Math.abs(q[l-1]) <= prec)
+            break 
+        }
+        if (!test_convergence)
+        { // cancellation of e[l] if l>0
+          c= 0.0
+          s= 1.0
+          var l1= l-1
+          for (i =l; i<k+1; i++)
+          { 
+            f= s*e[i]
+            e[i]= c*e[i]
+            if (Math.abs(f) <= prec)
+              break
+            g= q[i]
+            h= pythag(f,g)
+            q[i]= h
+            c= g/h
+            s= -f/h
+            for (j=0; j < m; j++)
+            { 
+              y= u[j][l1]
+              z= u[j][i]
+              u[j][l1] =  y*c+(z*s)
+              u[j][i] = -y*s+(z*c)
+            } 
+          } 
+        }
+        // test f convergence
+        z= q[k]
+        if (l== k)
+        { //convergence
+          if (z<0.0)
+          { //q[k] is made non-negative
+            q[k]= -z
+            for (j=0; j < n; j++)
+              v[j][k] = -v[j][k]
+          }
+          break  //break out of iteration loop and move on to next k value
+        }
+        if (iteration >= itmax-1)
+          throw 'Error: no convergence.'
+        // shift from bottom 2x2 minor
+        x= q[l]
+        y= q[k-1]
+        g= e[k-1]
+        h= e[k]
+        f= ((y-z)*(y+z)+(g-h)*(g+h))/(2.0*h*y)
+        g= pythag(f,1.0)
+        if (f < 0.0)
+          f= ((x-z)*(x+z)+h*(y/(f-g)-h))/x
+        else
+          f= ((x-z)*(x+z)+h*(y/(f+g)-h))/x
+        // next QR transformation
+        c= 1.0
+        s= 1.0
+        for (i=l+1; i< k+1; i++)
+        { 
+          g= e[i]
+          y= q[i]
+          h= s*g
+          g= c*g
+          z= pythag(f,h)
+          e[i-1]= z
+          c= f/z
+          s= h/z
+          f= x*c+g*s
+          g= -x*s+g*c
+          h= y*s
+          y= y*c
+          for (j=0; j < n; j++)
+          { 
+            x= v[j][i-1]
+            z= v[j][i]
+            v[j][i-1] = x*c+z*s
+            v[j][i] = -x*s+z*c
+          }
+          z= pythag(f,h)
+          q[i-1]= z
+          c= f/z
+          s= h/z
+          f= c*g+s*y
+          x= -s*g+c*y
+          for (j=0; j < m; j++)
+          {
+            y= u[j][i-1]
+            z= u[j][i]
+            u[j][i-1] = y*c+z*s
+            u[j][i] = -y*s+z*c
+          }
+        }
+        e[l]= 0.0
+        e[k]= f
+        q[k]= x
+      } 
+    }
+      
+    //vt= transpose(v)
+    //return (u,q,vt)
+    for (i=0;i<q.length; i++) 
+      if (q[i] < prec) q[i] = 0
+      
+    //sort eigenvalues  
+    for (i=0; i< n; i++)
+    {  
+    //writeln(q)
+     for (j=i-1; j >= 0; j--)
+     {
+      if (q[j] < q[i])
+      {
+    //  writeln(i,'-',j)
+       c = q[j]
+       q[j] = q[i]
+       q[i] = c
+       for(k=0;k<u.length;k++) { temp = u[k][i]; u[k][i] = u[k][j]; u[k][j] = temp; }
+       for(k=0;k<v.length;k++) { temp = v[k][i]; v[k][i] = v[k][j]; v[k][j] = temp; }
+  //     u.swapCols(i,j)
+  //     v.swapCols(i,j)
+       i = j     
+      }
+     }  
+    }
+    
+    return {U:u,S:q,V:v}
 };
 
 rep = function rep(s,v,k) {
@@ -872,3 +1077,4 @@ rep = function rep(s,v,k) {
     for(i=n-1;i>=0;i--) { ret[i] = rep(s,v,k+1); }
     return ret;
 }
+
