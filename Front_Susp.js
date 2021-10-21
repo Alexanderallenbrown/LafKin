@@ -590,7 +590,7 @@ this.solve = function(){
   //   useIter = this.resid_thresh/2.0
   // }
   // else{
-  //   useIter = this.resid_thresh*2.0
+  //   useIter = this.resid_thresh*1.0
   // }
   useIter = this.resid_thresh
 
