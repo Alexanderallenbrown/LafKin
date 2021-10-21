@@ -15,6 +15,7 @@ const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
 const chassis = [[0,0,0],[.3,0,0],[0,0.05,.18],[.3,0.0,.18],[-.05,0.02,0]]
+const rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 
@@ -36,11 +37,25 @@ var dt = .015
 var wheelslider = document.getElementById("wheelslider")
 var autosolve_checkbox = document.getElementById("autoSolve")
 var wheelpos = 0;
+var chassisroll = 0;
+var rackdisp = 0;
 
 
 //callbacks for these functions:
 wheelslider.oninput = function(){
   wheelpos = this.value/1000.0;
+  //print("wheel pos udpate: " +str(this.value))
+}
+
+//callbacks for these functions:
+rackslider.oninput = function(){
+  rackdisp = this.value/1000.0;
+  //print("wheel pos udpate: " +str(this.value))
+}
+
+//callbacks for these functions:
+rollslider.oninput = function(){
+  chassisroll = this.value/1000.0;
   //print("wheel pos udpate: " +str(this.value))
 }
 
@@ -113,6 +128,46 @@ function plotCallback(){
   /// then update the chart.
 }
 
+function savePlotData(){
+
+  var simdata = ''
+
+  for(let k=0;k<globalYData.length;k++){
+    simdata+=str(globalXData[k])+"\t"+str(globalYData[k])+"\r\n"
+  }
+
+  var blob;
+  if (typeof window.Blob == "function") {
+    blob = new Blob([simdata], {
+      type: "text/latex"
+    });
+  } else {
+    var BlobBuilder = window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder || window.MSBlobBuilder;
+    var bb = new BlobBuilder();
+    bb.append(simdata);
+    blob = bb.getBlob(simdata);
+  }
+  var URL = window.URL || window.webkitURL;
+  var bloburl = URL.createObjectURL(blob);
+  var anchor = document.createElement("a");
+  if ('download' in anchor) {
+    anchor.style.visibility = "hidden";
+    anchor.href = bloburl;
+    anchor.download = document.getElementById("plotfilename").value+".txt";
+    document.body.appendChild(anchor);
+    var evt = document.createEvent("MouseEvents");
+    evt.initEvent("click", true, true);
+    anchor.dispatchEvent(evt);
+    document.body.removeChild(anchor);
+  } else if (navigator.msSaveBlob) {
+    navigator.msSaveBlob(blob, "SimData.txt");
+  } else {
+    location.href = bloburl;
+  }
+
+
+}
+
 
 //call this plot when options have changed.
 function generateNewPlot(){
@@ -125,6 +180,7 @@ function generateNewPlot(){
   simlength = int((input_max-input_min)/input_increment);
   print("Sim Length: "+str(simlength))
   globalXData.push(input_min);
+  susp.solve();
   simulating = true;
 
 }
@@ -238,6 +294,8 @@ function draw() {
       //see if we want auto-solve on
       //use the slider to update the wheel position.
       susp.uprightGlobal[2] = wheelpos
+      //susp.chassisGlobal[3] = chassisroll
+      susp.chassis[4][1] = rackY+rackdisp
       var autosolve_now = autosolve_checkbox.checked;
       if(autosolve_now){
           susp.solve();
@@ -249,6 +307,7 @@ function draw() {
       
       ////we are supposed to be running an automatic simulation now.
       simstr = "simulating"
+
       if(globalXData.length<=simlength){
         // simstr+="."
         // print(simstr)
@@ -259,6 +318,12 @@ function draw() {
         if(simxtype == "Jounce"){
           //now we set the simulation's input to the last element in the input array
           susp.uprightGlobal[2] = globalXData.slice(-1)[0]
+          if(globalXData.length==1){
+            susp.solve();
+          }
+        }
+        else if(simxtype="Roll"){
+          susp.chassisGlobal[3] = globalXData.slice(-1)[0]
         }
         else{
           simulating = false;
@@ -292,6 +357,7 @@ function draw() {
         suspPlot.options.scales.yAxes[0].scaleLabel.labelString = simytype;
         suspPlot.options.scales.xAxes[0].scaleLabel.labelString = simxtype;
         suspPlot.options.title.text = simytype+" vs. "+simxtype;
+        document.getElementById("plotfilename").value = simytype+"_vs_"+simxtype
         suspPlot.update();
       }
   }
@@ -350,7 +416,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //constraint values
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .0005
-  this.iter_limit = 25
+  this.iter_limit = 100
   this.itercount = 100
   
 
@@ -775,12 +841,15 @@ this.drawTieRod = function(){
   stroke(color(255,0,255))
   line(cpoints[4][0],cpoints[4][1],-cpoints[4][2],upoints[2][0],upoints[2][1],-upoints[2][2])
 
-  for(let k = 0;k<2;k++){
+  
     push()
-    translate(points[k][0],points[k][1],-points[k][2])
+    translate(cpoints[4][0],cpoints[4][1],-cpoints[4][2])
     sphere(0.005)
     pop()
-  }
+    push()
+    translate(upoints[2][0],upoints[2][1],-upoints[2][2])
+    sphere(0.005)
+    pop()
 
 
 

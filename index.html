@@ -46,7 +46,17 @@ div {text-align: left;}
                   <div class="slidecontainer">
                   Wheel  $ \Delta z $:
                   <input type="range" min="-50" max="50" value="0" class="slider" id="wheelslider">
-            </div>
+                  </div>
+                  <!-- <br> -->
+                  <div class="slidecontainer">
+                  Rack  $ \Delta y $:
+                  <input type="range" min="-50" max="50" value="0" class="slider" id="rackslider">
+                  </div>
+                  <!-- <br> -->
+                  <div class="slidecontainer">
+                  Chassis  $ \phi $:
+                  <input type="range" min="-100" max="100" value="0" class="slider" id="rollslider">
+                  </div>
             <button onclick="solveSuspension()">Solve Once</button>
             <input type="checkbox" id="autoSolve" value="auto_Solve" checked> AutoSolve <br>
               </div>
@@ -70,6 +80,9 @@ div {text-align: left;}
                 <textarea id="input_max" name="max" rows="1" cols="10">0.0254</textarea>
                 <br>
                 <button onclick="generateNewPlot()">Generate Plot</button>
+                Plot Filename: 
+                <textarea id="plotfilename" name="plotfilename" rows=1 cols="25">plotdata</textarea> .txt
+                <button onclick="savePlotData()">Save Plot Data</button>
                 </div>
       </div>
               
