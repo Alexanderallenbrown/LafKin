@@ -214,7 +214,7 @@ function setup() {
 
   var cnv = createCanvas(windowWidth/2, 500,WEBGL);
   cnv.parent('sketch-holder')
-  initLineChart([],"hello","hi","howdy")
+  initLineChart([],"Choose plot options below, then hit 'generate plot' ","Independent variable","Dependent Variable")
   susp = new Suspension(lowerA,upperA,upright,chassis,tierodlength);
   susp.draw()
   print(wheelslider)
