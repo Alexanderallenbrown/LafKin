@@ -422,14 +422,14 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
 
   this.getqArrayFromGlobals = function(){
     // print(this.lowerAGlobal)
-    var q = [this.lowerAGlobal[3],this.lowerAGlobal[4],this.lowerAGlobal[5],this.upperAGlobal[3],this.upperAGlobal[4],this.upperAGlobal[5],this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5],this.uprightGlobal[0],this.uprightGlobal[1]]
+    var q = [this.lowerAGlobal[3],this.lowerAGlobal[4],this.lowerAGlobal[5],this.upperAGlobal[3],this.upperAGlobal[4],this.upperAGlobal[5],this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5],this.uprightGlobal[0],this.uprightGlobal[1],this.lowerAGlobal[0],this.lowerAGlobal[1],this.lowerAGlobal[2],this.upperAGlobal[0],this.upperAGlobal[1],this.upperAGlobal[2]]
     return q
   }
 
   this.updateGlobalPositionsFromQ = function(q){
     //q are: [lAr lAp lAa uAr uAp uAa ur up ua ux uy]
-    this.lowerAGlobal = [this.lowerAGlobal[0],this.lowerAGlobal[1],this.lowerAGlobal[2],q[0],q[1],q[2]]
-    this.upperAGlobal = [this.upperAGlobal[0],this.upperAGlobal[1],this.upperAGlobal[2],q[3],q[4],q[5]]
+    this.lowerAGlobal = [q[11],q[12],q[13],q[0],q[1],q[2]]
+    this.upperAGlobal = [q[14],q[15],q[16],q[3],q[4],q[5]]
     this.uprightGlobal = [q[9],q[10],this.uprightGlobal[2],q[6],q[7],q[8]]
   }
 
@@ -545,7 +545,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
     phi8 = sph3_uaglobal[1] - sph3_uprightglobal[1]
     phi9 = sph3_uaglobal[2] - sph3_uprightglobal[2]
 
-    //calculate partial spherical (sph4) for LBJ connection between LA and Upright
+    //calculate spherical (sph4) for LBJ connection between LA and Upright
     sph4_laglobal = this.calcGlobal(lowerAGlobal,this.lowerA[2])
     sph4_uprightglobal = this.calcGlobal(uprightGlobal,this.upright[0])
     //actually write the z constraint eqn for this spherical
@@ -565,7 +565,20 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
     // uprightAxisGlobal = this.calcGlobal([0,0,0,this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5]],[1,0,0])
     // phi14 = uprightAxisGlobal[0] - 1
 
-    constraints = math.matrix([[phi1],[phi2],[phi3],[phi4],[phi5],[phi6],[phi7],[phi8],[phi9],[phi10],[phi11],[phi12],[phi13]])
+    //add constraints for rear a arm-chassis points
+    sph5_laglobal = this.calcGlobal(lowerAGlobal,this.lowerA[0])
+    sph5_chassisglobal = this.calcGlobal(this.chassisGlobal,this.chassis[0])
+    phi14 = sph5_laglobal[0]-sph5_chassisglobal[0]
+    phi15 = sph5_laglobal[1]-sph5_chassisglobal[1]
+    phi16 = sph5_laglobal[2]-sph5_chassisglobal[2]
+
+    sph6_uaglobal = this.calcGlobal(upperAGlobal,this.upperA[0])
+    sph6_chassisglobal = this.calcGlobal(this.chassisGlobal,this.chassis[2])
+    phi17 = sph6_uaglobal[0]-sph6_chassisglobal[0]
+    phi18 = sph6_uaglobal[1]-sph6_chassisglobal[1]
+    phi19 = sph6_uaglobal[2]-sph6_chassisglobal[2]
+
+    constraints = math.matrix([[phi1],[phi2],[phi3],[phi4],[phi5],[phi6],[phi7],[phi8],[phi9],[phi10],[phi11],[phi12],[phi13],[phi14],[phi15],[phi16],[phi17],[phi18],[phi19]])
 
     // var fx = this.r2*cos(this.t2)+this.r3*cos(math.subset(q,math.index(0,0))) - this.r4*cos(math.subset(q,math.index(1,0))) - this.r1*cos(this.t1)
     // var fy = this.r2*sin(this.t2)+this.r3*sin(math.subset(q,math.index(0,0))) - this.r4*sin(math.subset(q,math.index(1,0))) - this.r1*sin(this.t1)
@@ -577,8 +590,8 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //calculates numerical jacobian
   this.calcJac = function(){
     //create a matrix to hold the jacobian
-    const nconst = 13
-    const ncoords = 11
+    const nconst = 19
+    const ncoords = 17
     Jac = math.zeros(nconst,ncoords)
     //now perturb each gen coord 1 by 1
       for (let j = 0; j < ncoords; j++) {
@@ -592,7 +605,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
         //this should be Jac(:,j) = (const_local - const)/eps
         jac_column = math.multiply((math.subtract(constraints_local,this.constraints)),1.0/this.eps)
         // print("Jac Column: "+str(jac_column))
-        Jac = math.subset(Jac,math.index([0,1,2,3,4,5,6,7,8,9,10,11,12],j),jac_column)
+        Jac = math.subset(Jac,math.index([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],j),jac_column)
         // for(let i = 0;i<nconst;i++){
         //   math.subset(Jac,math.index(j,i), jac_column[i]
         // }
