@@ -41,7 +41,7 @@ var wheelpos = 0;
 //callbacks for these functions:
 wheelslider.oninput = function(){
   wheelpos = this.value/1000.0;
-  print("wheel pos udpate: " +str(this.value))
+  //print("wheel pos udpate: " +str(this.value))
 }
 
 function windowResized() {
@@ -126,6 +126,7 @@ function generateNewPlot(){
   print("Sim Length: "+str(simlength))
   globalXData.push(input_min);
   simulating = true;
+
 }
 
 
@@ -150,6 +151,7 @@ function initLineChart(data, myTitle, xlabel, ylabel) {
         var config = {  // Chart.js configuration, including the DATASETS data from the model data
           type: "scatter",
           title: myTitle,
+          
           data: {
         datasets: [{
             // xAxisID: "Time (s)",
@@ -163,6 +165,8 @@ function initLineChart(data, myTitle, xlabel, ylabel) {
         }]
     },
           options: {
+            maintainAspectRatio: false,
+          responsive: true,
              scales: {
             yAxes: [{
               scaleLabel: {
@@ -285,6 +289,9 @@ function draw() {
         simulating = false;
         newChartData = generateData(globalXData,globalYData);
         suspPlot.data.datasets[0].data = newChartData;
+        suspPlot.options.scales.yAxes[0].scaleLabel.labelString = simytype;
+        suspPlot.options.scales.xAxes[0].scaleLabel.labelString = simxtype;
+        suspPlot.options.title.text = simxtype+" vs. "+simytype;
         suspPlot.update();
       }
   }
@@ -344,6 +351,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .005
   this.iter_limit = 25
+  this.itercount = 100
   
 
   this.getqArrayFromGlobals = function(){
@@ -523,13 +531,13 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
         //   math.subset(Jac,math.index(j,i), jac_column[i]
         // }
       }
-  
   return Jac
 }
 
 this.iterate = function(){
   //this.getqArrayFromGlobals()
   Jac = this.calcJac()
+
   //TRY using the SVD to compute a pseudoinverse.
   svdjac = svd(Jac._data)
   var Svec= svdjac.S
@@ -578,10 +586,19 @@ this.solve = function(){
   this.q = this.getqArrayFromGlobals()
   this.constraints = this.calcConstraints(this.q)
 
+  // if((this.itercount<25)){
+  //   useIter = this.resid_thresh/2.0
+  // }
+  // else{
+  //   useIter = this.resid_thresh*2.0
+  // }
+  useIter = this.resid_thresh
+
   //iterate while error is large
   niter = 0
   //print((math.max(math.abs(this.constraints))))
-  while((math.max(math.abs(this.constraints))>this.resid_thresh)&&(niter<this.iter_limit)){
+
+  while((math.max(math.abs(this.constraints))>useIter)&&(niter<this.iter_limit)){
     //if(this.debug){print("q: "+str(math.multiply(this.q,180/3.14)))}
     niter+=1
     print("Iteration: "+str(niter))
@@ -592,6 +609,8 @@ this.solve = function(){
   if(niter>=this.iter_limit){
     print("iteration limit reached! norm is: "+str(math.max(this.constraints)))
   }
+  this.itercount = niter
+
 
   // if(this.debug){
   //   print("FINAL : "+str(this.t3*180/PI)+","+str(this.t4*180/PI))
