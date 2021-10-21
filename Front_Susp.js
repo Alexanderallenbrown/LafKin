@@ -19,7 +19,7 @@ const rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 
-const tierodlength = 0.35
+const tierodlength = 0.38
 
 var sinphi = 0
 
@@ -417,7 +417,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .0005
   this.iter_limit = 100
-  this.itercount = 100
+  this.itercount = 0
   
 
   this.getqArrayFromGlobals = function(){
@@ -650,6 +650,10 @@ this.solveRough = function(){
 this.solve = function(){
   //calculate initial value of constraints
   this.q = this.getqArrayFromGlobals()
+  if(this.itercount<this.iter_limit){
+  qsave = varcopy(this.q)
+  print("saved configuration: "+str(qsave))
+}
   this.constraints = this.calcConstraints(this.q)
 
   // if((this.itercount<25)){
@@ -672,11 +676,19 @@ this.solve = function(){
     this.iterate()
 
   }
-  if(niter>=this.iter_limit){
-    print("iteration limit reached! norm is: "+str(math.max(this.constraints)))
-  }
+
   this.itercount = niter
 
+  if(this.itercount>=this.iter_limit){
+    print("iteration limit reached! norm is: "+str(math.max(this.constraints)))
+    this.q = varcopy(qsave)
+    this.updateGlobalPositionsFromQ(this.q)
+    document.getElementById("sim_msg").innerHTML="Iteration Limit Reached! <br> What you're asking for is impossible <br> Reload page to reset."
+  }
+  else{
+    document.getElementById("sim_msg").innerHTML="Simulation health OK <br> Max solver error: "+parseFloat(math.max(this.constraints)).toPrecision(2)
+
+  }
 
   // if(this.debug){
   //   print("FINAL : "+str(this.t3*180/PI)+","+str(this.t4*180/PI))
