@@ -48,25 +48,25 @@ div {text-align: left;}
                   <input type="range" min="-50" max="50" value="0" class="slider" id="wheelslider">
             </div>
             <button onclick="solveSuspension()">Solve Once</button>
-            <input type="checkbox" id="autoSolve" value="auto_Solve"> AutoSolve <br>
+            <input type="checkbox" id="autoSolve" value="auto_Solve" checked> AutoSolve <br>
               </div>
                 <div style="display: table-cell; margin-left: 50vw; padding: 2em">
                 <h2>Plotting Options</h2> <br>
                 <label for="y_axis">Dependent Variable to Plot</label>
                 <select name="y_axis" id="chart_y_axis">
-                  <option value="Camber">Camber</option>
-                  <option value="Steer">Steer</option>
+                  <option value="Camber">Camber (rad)</option>
+                  <option value="Steer">Steer (rad)</option>
                 </select>
 
                 <label for="x_axis">Independent Variable to Plot</label>
                 <select name="x_axis" id="chart_x_axis">
-                  <option value="Jounce">Jounce</option>
-                  <option value="Roll">Roll</option>
+                  <option value="Jounce">Jounce (m)</option>
+                  <option value="Roll">Roll (rad)</option>
                 </select>
                 <br>
                 min/increment/max
                 <textarea id="input_min" name="min" rows="1" cols="10">-0.0254</textarea>
-                <textarea id="input_inc" name="increment" rows="1" cols="10">0.00254</textarea>
+                <textarea id="input_inc" name="increment" rows="1" cols="10">0.001</textarea>
                 <textarea id="input_max" name="max" rows="1" cols="10">0.0254</textarea>
                 <br>
                 <button onclick="generateNewPlot()">Generate Plot</button>

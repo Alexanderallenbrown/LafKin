@@ -14,11 +14,11 @@
 const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
-const chassis = [[0,0,0],[.3,0,0],[0,0.05,.18],[.3,0.05,.18],[-.05,0,0]]
+const chassis = [[0,0,0],[.3,0,0],[0,0.05,.18],[.3,0.0,.18],[-.05,0.02,0]]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 
-const tierodlength = 0.55
+const tierodlength = 0.35
 
 var sinphi = 0
 
@@ -291,7 +291,7 @@ function draw() {
         suspPlot.data.datasets[0].data = newChartData;
         suspPlot.options.scales.yAxes[0].scaleLabel.labelString = simytype;
         suspPlot.options.scales.xAxes[0].scaleLabel.labelString = simxtype;
-        suspPlot.options.title.text = simxtype+" vs. "+simytype;
+        suspPlot.options.title.text = simytype+" vs. "+simxtype;
         suspPlot.update();
       }
   }
@@ -349,7 +349,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //this.q = [this.lowerAglobal[3],this.lowerAGlobal[4],this.lowerAGlobal[5],this.upperAGlobal[3],this.upperAGlobal[4],this.upperAGlobal[5],this.uprightGlobal[3],this.uprightGlobal[4],this.uprightGlobal[5],this.uprightGlobal[0],this.uprightGlobal[1]]
   //constraint values
   this.eps = .001 //this is the perturbation size
-  this.resid_thresh = .005
+  this.resid_thresh = .0005
   this.iter_limit = 25
   this.itercount = 100
   
@@ -492,7 +492,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
     //this constraint tells us that the distance between LBJ and UBJ (between )
     d_ua = this.calcGlobal(uprightGlobal,this.upright[2])
     d_chassis = this.calcGlobal(this.chassisGlobal,this.chassis[4])
-    phi13 = (math.pow(d_ua[0]-d_chassis[0],2)+math.pow(d_ua[1]-d_chassis[1],2)+math.pow(d_ua[1]-d_chassis[1],2)) - math.pow(this.tierodlength,2)
+    phi13 = (math.pow(d_ua[0]-d_chassis[0],2)+math.pow(d_ua[1]-d_chassis[1],2)+math.pow(d_ua[2]-d_chassis[2],2)) - math.pow(this.tierodlength,2)
 
 
     // //calculate dot product between upright X and global X to keep it from flipping wildly.
