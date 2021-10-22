@@ -14,7 +14,7 @@
 const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
-const chassis = [[0,0,0],[.3,0,0],[0,0.05,.18],[.3,0.0,.18],[-.05,0.02,0]]
+const chassis = [[0,0,-.09],[.3,0,-.09],[0,0.0,.09],[.3,0.0,.09],[-.05,0.02,-.09]]
 const rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
@@ -53,11 +53,11 @@ rackslider.oninput = function(){
   //print("wheel pos udpate: " +str(this.value))
 }
 
-// //callbacks for these functions:
-// rollslider.oninput = function(){
-//   chassisroll = this.value/1000.0;
-//   //print("wheel pos udpate: " +str(this.value))
-// }
+//callbacks for these functions:
+rollslider.oninput = function(){
+  chassisroll = this.value/1000.0;
+  //print("wheel pos udpate: " +str(this.value))
+}
 
 function windowResized() {
   resizeCanvas(windowWidth/2, 750);
@@ -293,8 +293,8 @@ function draw() {
   if(!simulating){
       //see if we want auto-solve on
       //use the slider to update the wheel position.
-      susp.uprightGlobal[2] = wheelpos
-      //susp.chassisGlobal[3] = chassisroll
+      susp.uprightGlobal[2] = wheelpos-.09
+      susp.chassisGlobal[3] = chassisroll
       susp.chassis[4][1] = rackY+rackdisp
       var autosolve_now = autosolve_checkbox.checked;
       if(autosolve_now){
@@ -393,10 +393,12 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
 
   //now create global coordinates for each body
   //format [X,Y,Z,r,p,y] for each body
-  var lowerAGlobal = [0,0,0,0,0,0]
-  var upperAGlobal = [0,0,.18,0.05,0,0]
   var chassisGlobal= [0,0,0,0,0,0]
-  var uprightGlobal = [.15,.4,0,.25,0,0]
+  var lowerAGlobal = [0,0,-.09,0,0,0]
+  var upperAGlobal = [0,0,.09,0.05,0,0]
+  var uprightGlobal = [.15,.4,-.09,.25,0,0]
+
+
 
   //print(lowerAGlobal)
   this.lowerAGlobal = lowerAGlobal
@@ -648,11 +650,24 @@ this.solveRough = function(){
 }
 
 this.solve = function(){
+
+  //update the A-arm global positions that aren't in q.
+  lA_rearglobal = this.calcGlobal(this.chassisGlobal,this.chassis[0])
+  uA_rearglobal = this.calcGlobal(this.chassisGlobal,this.chassis[2])
+
+  this.lowerAGlobal[0] = lA_rearglobal[0]
+  this.lowerAGlobal[1] = lA_rearglobal[1]
+  this.lowerAGlobal[2] = lA_rearglobal[2]
+  this.upperAGlobal[0] = uA_rearglobal[0]
+  this.upperAGlobal[1] = uA_rearglobal[1]
+  this.upperAGlobal[2] = uA_rearglobal[2]
+  // print("LA and RA: "+str(this.lowerAGlobal).slice(0,3)+"\t,\t"+str(this.upperAGlobal).slice(0,3))
+  // print("should be: "+str(lA_rearglobal)+"\r:\t"+str(uA_rearglobal))
   //calculate initial value of constraints
   this.q = this.getqArrayFromGlobals()
   if(this.itercount<this.iter_limit){
   qsave = varcopy(this.q)
-  print("saved configuration: "+str(qsave))
+  // print("saved configuration: "+str(qsave))
 }
   this.constraints = this.calcConstraints(this.q)
 
@@ -671,7 +686,7 @@ this.solve = function(){
   while((math.max(math.abs(this.constraints))>useIter)&&(niter<this.iter_limit)){
     //if(this.debug){print("q: "+str(math.multiply(this.q,180/3.14)))}
     niter+=1
-    print("Iteration: "+str(niter))
+    // print("Iteration: "+str(niter))
     //print(niter,this.constraints)
     this.iterate()
 
