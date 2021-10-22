@@ -14,7 +14,7 @@
 const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
-const chassis = [[0,0,-.09],[.3,0,-.09],[0,0.0,.09],[.3,0.0,.09],[-.05,0.02,-.09]]
+const chassis = [[0,.2,-.09],[.3,.2,-.09],[0,0.2,.09],[.3,0.2,.09],[-.05,0.22,-.09]]
 const rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
@@ -275,7 +275,7 @@ function setup() {
   susp.draw()
   print(wheelslider)
   print(autosolve_checkbox)
-  camera(-1000,-1000,3000,-500,0,0,0,1,0)
+  camera(-1000,-1000,2500,-500,0,0,0,1,0)
 }
 
 function draw() {
@@ -284,6 +284,8 @@ function draw() {
   told = tnow
   background(50);
   orbitControl();
+  // setAttributes('antialias', true);
+  // frustum(-width/2, width/2, -height/2, height, 0, max(width, height))
   fill(0)
   stroke(0)
 
@@ -394,9 +396,9 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //now create global coordinates for each body
   //format [X,Y,Z,r,p,y] for each body
   var chassisGlobal= [0,0,0,0,0,0]
-  var lowerAGlobal = [0,0,-.09,0,0,0]
-  var upperAGlobal = [0,0,.09,0.05,0,0]
-  var uprightGlobal = [.15,.4,-.09,.25,0,0]
+  var lowerAGlobal = [chassisGlobal[0]+chassis[0][0],chassisGlobal[1]+chassis[0][1],chassisGlobal[2]+chassis[0][2]-.09,0,0,0]
+  var upperAGlobal = [chassisGlobal[0]+chassis[2][0],chassisGlobal[1]+chassis[2][1],chassisGlobal[2]+chassis[2][2]+.09,0.05,0,0]
+  var uprightGlobal = [lowerAGlobal[0]+.15,lowerAGlobal[1]+.4,lowerAGlobal[2]-.09,.25,0,0]
 
 
 
@@ -883,7 +885,30 @@ this.drawTieRod = function(){
 }
 
 this.drawChassis = function(){
+  cpoints = this.getDrawPoints(this.chassisGlobal,this.chassis)
+  chassis2 = varcopy(this.chassis)
+  chassis2[0][1]=0
+  chassis2[1][1]=0
+  chassis2[2][1]=0
+  chassis2[3][1]=0
+  cpoints2 = this.getDrawPoints(this.chassisGlobal,chassis2)
+  stroke(color(180,180,180))
 
+  for(let k=0;k<cpoints.length;k++){
+    push()
+    translate(cpoints[k][0],cpoints[k][1],-cpoints[k][2])
+    sphere(0.004)
+    pop()
+  }
+  //draw line from vehicle center to RLA
+  line(cpoints[0][0],cpoints[0][1],-cpoints[0][2],cpoints2[0][0],cpoints2[0][1],-cpoints2[0][2])
+  line(cpoints[1][0],cpoints[1][1],-cpoints[1][2],cpoints2[1][0],cpoints2[1][1],-cpoints2[1][2])
+  line(cpoints[2][0],cpoints[2][1],-cpoints[2][2],cpoints2[2][0],cpoints2[2][1],-cpoints2[2][2])
+  line(cpoints[3][0],cpoints[3][1],-cpoints[3][2],cpoints2[3][0],cpoints2[3][1],-cpoints2[3][2])
+  line(cpoints[0][0],cpoints[0][1],-cpoints[0][2],cpoints[1][0],cpoints[1][1],-cpoints[1][2])
+  line(cpoints[2][0],cpoints[2][1],-cpoints[2][2],cpoints[3][0],cpoints[3][1],-cpoints[3][2])
+  line(cpoints[0][0],cpoints[0][1],-cpoints[0][2],cpoints[2][0],cpoints[2][1],-cpoints[2][2])
+  line(cpoints[1][0],cpoints[1][1],-cpoints[1][2],cpoints[3][0],cpoints[3][1],-cpoints[3][2])
 }
 
 }
