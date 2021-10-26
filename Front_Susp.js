@@ -23,6 +23,18 @@ const tierodlength = 0.38
 
 var sinphi = 0
 
+//create a global variable to hold the suspension object.
+const suspConfig = {};
+suspConfig.lowerA = lowerA
+suspConfig.upperA = upperA
+suspConfig.chassis = chassis
+suspConfig.upright = upright
+suspConfig.tierodlength = tierodlength
+suspConfig.rackY = rackY
+
+updateSuspTextBoxes(suspConfig)
+
+
 
 
 //create a variable to hold suspension object
@@ -65,6 +77,8 @@ function windowResized() {
 }
 
 function saveConfig(){
+  myConfig = getSuspPointsFromHTML()
+  downloadJSON(JSON.stringify(myConfig),document.getElementById("configfilename").value+".txt")
 
 }
 
@@ -72,6 +86,141 @@ function loadConfig(){
   
 }
 
+function updateGeometry(){
+  suspConfig = updateSuspTextBoxes();
+}
+
+function downloadJSON(content, fileName) {
+    var a = document.createElement("a");
+    var file = new Blob([content], {type: 'text/plain'});
+    a.href = URL.createObjectURL(file);
+    a.download = fileName;
+    a.click();
+}
+
+function updateSuspTextBoxes(myConfig){
+    //lower a arm rear in chassis frame
+    document.getElementById("lar-x").value = myConfig.chassis[0][0]
+    document.getElementById("lar-y").value = myConfig.chassis[0][1]
+    document.getElementById("lar-z").value = myConfig.chassis[0][2]
+    //lower a arm front in chassis frame
+    document.getElementById("laf-x").value = myConfig.chassis[1][0]
+    document.getElementById("laf-y").value = myConfig.chassis[1][0]
+    document.getElementById("laf-z").value = myConfig.chassis[1][0]
+    //upper a arm rear in chassis frame
+    document.getElementById("uar-x").value = myConfig.chassis[2][0]
+    document.getElementById("uar-y").value = myConfig.chassis[2][1]
+    document.getElementById("uar-z").value = myConfig.chassis[2][2]
+    //upper a arm front in chassis frame
+    document.getElementById("uaf-x").value = myConfig.chassis[3][0]
+    document.getElementById("uaf-y").value = myConfig.chassis[3][1]
+    document.getElementById("uaf-z").value = myConfig.chassis[3][2]
+     //lower a arm ball joint in A ARM frame
+
+    document.getElementById("lalbj-x").value = myConfig.lowerA[2][0]
+    document.getElementById("lalbj-y").value = myConfig.lowerA[2][1]
+    document.getElementById("lalbj-z").value = myConfig.lowerA[2][2]
+    //upper a arm ball joint in A ARM frame
+    document.getElementById("uaubj-x").value = myConfig.upperA[2][0]
+    document.getElementById("uaubj-y").value = myConfig.upperA[2][1]
+    document.getElementById("uaubj-z").value = myConfig.upperA[2][2]
+    //upright upper ball joint point
+    document.getElementById("urubj-x").value = myConfig.upright[1][0]
+    document.getElementById("urubj-y").value = myConfig.upright[1][1]
+    document.getElementById("urubj-z").value = myConfig.upright[1][2]
+    //upright lower ball joint point (should be 0 0 0)
+    document.getElementById("urlbj-x").value = myConfig.upright[0][0]
+    document.getElementById("urlbj-y").value = myConfig.upright[0][1]
+    document.getElementById("urlbj-z").value = myConfig.upright[0][2]
+    //upright tie rod point
+    document.getElementById("urtr-x").value = myConfig.upright[2][0]
+    document.getElementById("urtr-y").value = myConfig.upright[2][1]
+    document.getElementById("urtr-z").value = myConfig.upright[2][2]
+    //chassis tie rod point
+    document.getElementById("ctr-x").value = myConfig.chassis[4][0]
+    document.getElementById("ctr-y").value = myConfig.chassis[4][1]
+    document.getElementById("ctr-z").value = myConfig.chassis[4][2]
+
+    document.getElementById("tierod-length").value = myConfig.tierodlength
+    document.getElementById("camber-offset").value = myConfig.camber_offset
+
+}
+
+function getSuspPointsFromHTML(){
+  //get values one at a time from the text boxes
+
+  //lower a arm rear in chassis frame
+  var lar_x = float(document.getElementById("lar-x").value)
+  var lar_y = float(document.getElementById("lar-y").value)
+  var lar_z = float(document.getElementById("lar-z").value)
+  //lower a arm front in chassis frame
+  var laf_x = float(document.getElementById("laf-x").value)
+  var laf_y = float(document.getElementById("laf-y").value)
+  var laf_z = float(document.getElementById("laf-z").value)
+  //upper a arm rear in chassis frame
+  var uar_x = float(document.getElementById("uar-x").value)
+  var uar_y = float(document.getElementById("uar-y").value)
+  var uar_z = float(document.getElementById("uar-z").value)
+  //upper a arm front in chassis frame
+  var uaf_x = float(document.getElementById("uaf-x").value)
+  var uaf_y = float(document.getElementById("uaf-y").value)
+  var uaf_z = float(document.getElementById("uaf-z").value)
+  //lower a arm ball joint in A ARM frame
+  var lalbj_x = float(document.getElementById("lalbj-x").value)
+  var lalbj_y = float(document.getElementById("lalbj-y").value)
+  var lalbj_z = float(document.getElementById("lalbj-z").value)
+  //upper a arm ball joint in A ARM frame
+  var uaubj_x = float(document.getElementById("uaubj-x").value)
+  var uaubj_y = float(document.getElementById("uaubj-y").value)
+  var uaubj_z = float(document.getElementById("uaubj-z").value)
+  //upright upper ball joint point
+  var urubj_x = float(document.getElementById("urubj-x").value)
+  var urubj_y = float(document.getElementById("urubj-y").value)
+  var urubj_z = float(document.getElementById("urubj-z").value)
+  //upright lower ball joint point (should be 0 0 0)
+  var urlbj_x = float(document.getElementById("urlbj-x").value)
+  var urlbj_y = float(document.getElementById("urlbj-y").value)
+  var urlbj_z = float(document.getElementById("urlbj-z").value)
+
+  //upright tie rod point
+  var urtr_x = float(document.getElementById("urtr-x").value)
+  var urtr_y = float(document.getElementById("urtr-y").value)
+  var urtr_z = float(document.getElementById("urtr-z").value)
+
+  //chassis tie rod point
+  var ctr_x = float(document.getElementById("ctr-x").value)
+  var ctr_y = float(document.getElementById("ctr-y").value)
+  var ctr_z = float(document.getElementById("ctr-z").value)
+
+  //tie rod length
+  var trl = float(document.getElementById("tierod-length").value)
+  //camber offset
+  var camber_offset = float(document.getElementById("camber-offset").value)
+
+  const newConfig = {}
+
+  //turn this into local coordinates
+  newConfig.chassis = [[lar_x,lar_y,lar_z],[laf_x,laf_y,laf_z],[uar_x,uar_y,uar_z],[uaf_x,uaf_y,uaf_z],[ctr_x,ctr_y,ctr_z]]
+  LA12 = math.sqrt(math.pow(newConfig.chassis[0][0]-newConfig.chassis[1][0],2) + math.pow(newConfig.chassis[0][1]-newConfig.chassis[1][1],2)+math.pow(newConfig.chassis[0][2]-newConfig.chassis[1][2],2))
+  UA12 = math.sqrt(math.pow(newConfig.chassis[2][0]-newConfig.chassis[3][0],2) + math.pow(newConfig.chassis[2][1]-newConfig.chassis[3][1],2)+math.pow(newConfig.chassis[2][2]-newConfig.chassis[3][2],2))
+
+  newConfig.lowerA = [[0,0,0],[LA12,0,0],[lalbj_x,lalbj_y,lalbj_z]]
+  newConfig.upperA = [[0,0,0],[UA12,0,0],[uaubj_x,uaubj_y,uaubj_z]]
+  newConfig.upright = [[urlbj_x,urlbj_y,urlbj_z],[urubj_x,urubj_y,urubj_z],[urtr_x,urtr_y,urtr_z],[camber_offset,0,0]]
+  newConfig.rackY = ctr_y
+  newConfig.tierodlength = trl
+
+  return newConfig
+}
+
+
+function guessGlobalsFromConfig(myConfig){
+//this function creates rough guesses for the suspension components' 
+//global position/orientation vectors based on a config.
+
+
+
+}
 
 
 ///// VARIABLES FOR PLOTTING AND DATA COLLECTION
@@ -303,7 +452,7 @@ function draw() {
   if(!simulating){
       //see if we want auto-solve on
       //use the slider to update the wheel position.
-      susp.uprightGlobal[2] = wheelpos-.09
+      susp.uprightGlobal[2] = wheelpos-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0
       susp.chassisGlobal[3] = chassisroll
       susp.chassis[4][1] = rackY+rackdisp
       var autosolve_now = autosolve_checkbox.checked;
@@ -327,7 +476,7 @@ function draw() {
         // print("Read Sim X type: "+simxtype)
         if(simxtype == "Jounce"){
           //now we set the simulation's input to the last element in the input array
-          susp.uprightGlobal[2] = globalXData.slice(-1)[0]-.09 //TODO
+          susp.uprightGlobal[2] = globalXData.slice(-1)[0]-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0 //TODO
           if(globalXData.length==1){
             susp.solve();
           }

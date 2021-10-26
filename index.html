@@ -115,9 +115,10 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
   Note: This section is not yet functional. Work in progress!
   <br>
 <h2>Geometry: Enter your geometry Below <br>  <br>
-<button onclick="saveConfig()">Save Suspension Config</button>   
+<button onclick="saveConfig()">Save Suspension Config</button>  
 <button onclick="loadConfig()">Load Suspension Config</button>  <br>
 </h2>
+Save Filename: <textarea id="configfilename" name="configfilename" rows=1 cols="25">suspdata</textarea> .txt <br> 
 <br>
 <table class = "center" style="width: 75%; border: 1px solid black; border-radius: 10px;margin-left: auto; margin-right: auto">
 <tbody>
@@ -163,7 +164,7 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
 </tr>
 <tr style="height: 23px;">
 <td style="height: 23px; width: 51.6446%; text-align: center;">UR-TR (Upright frame)</td>
-<td style="height: 23px; width: 47.9802%;">x: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea> y: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea> z: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea></td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="urtr-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="urtr-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="urtr-z" name="min" rows="1" cols="10">0</textarea></td>
 </tr>
 <tr style="height: 23px;">
 <td style="height: 23px; width: 51.6446%; text-align: center;">C-TR (Chassis frame)&nbsp;</td>
