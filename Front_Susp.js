@@ -64,6 +64,14 @@ function windowResized() {
   susp.fbscale = 2*windowWidth
 }
 
+function saveConfig(){
+
+}
+
+function loadConfig(){
+  
+}
+
 
 
 ///// VARIABLES FOR PLOTTING AND DATA COLLECTION

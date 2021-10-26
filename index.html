@@ -109,7 +109,83 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
 <hr>
 
 <hr>
-<h2>Geometry:</h2>
+<div class="container" style="outline: solid 1px grey; text-align: center">
+  <br>
+  Note: This section is not yet functional. Work in progress!
+  <br>
+<h2>Geometry: Enter your geometry Below <br>  <br>
+<button onclick="saveConfig()">Save Suspension Config</button>   
+<button onclick="loadConfig()">Load Suspension Config</button>  <br>
+</h2>
+<br>
+<table class = "center" style="width: 75%; border: 1px solid black; border-radius: 10px;margin-left: auto; margin-right: auto">
+<tbody>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;"><strong>&nbsp;Parameter Name</strong></td>
+<td style="height: 23px; width: 47.9802%; text-align: center">&nbsp;<strong>Value(s)</strong></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">Chassis Origin</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="co-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="co-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="co-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">&nbsp;LAR (chassis frame)</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="lar-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="lar-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="lar-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">&nbsp;LAF (chassis frame)</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="laf-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="laf-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="laf-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23.5px;">
+<td style="height: 23.5px; width: 51.6446%; text-align: center;">LA-LBJ (LA frame)</td>
+<td style="height: 23.5px; width: 47.9802%;">x: <textarea id="lalbj-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="lalbj-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="lalbj-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UAR (chassis frame)</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="uar-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="uar-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="uar-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UAF (chassis frame)&nbsp;</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="uaf-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="uaf-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="uaf-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UA-UBJ (UA frame)&nbsp;</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="uaubj-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="uaubj-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="uaubj-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UR-LBJ (Upright frame)</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="urlbj-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="urlbj-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="urlbj-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UR-UBJ (Upright frame)&nbsp;</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="urubj-x" name="min" rows="1" cols="10">0</textarea> y: <textarea id="urubj-y" name="min" rows="1" cols="10">0</textarea> z: <textarea id="urubj-z" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">UR-TR (Upright frame)</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea> y: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea> z: <textarea id="input_min" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">C-TR (Chassis frame)&nbsp;</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="ctr-x" name="ctr-x" rows="1" cols="10">0</textarea> y: <textarea id="ctr-y" name="ctr-y" rows="1" cols="10">0</textarea> z: <textarea id="ctr-z" name="ctr-z" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">Tie Rod Length</td>
+<td style="height: 23px; width: 47.9802%; text-align: center"><textarea id="tierod-length" name="trl" rows="1" cols="10">0</textarea></td>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">Upright Camber Offset (rad)</td>
+<td style="height: 23px; width: 47.9802%; text-align: center"><textarea id="camber-offset" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+</tr>
+</tbody>
+</table>
+<br>
+<button onclick="updateGeometry()">Update</button>
+<br>
+<br>
+<!-- DivTable.com -->
+</div>
+
+
 
 <script src="Front_Susp.js"></script>
 </body>
