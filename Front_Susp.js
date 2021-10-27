@@ -24,14 +24,18 @@ const tierodlength = 0.38
 var sinphi = 0
 
 //create a global variable to hold the suspension object.
-const suspConfig = {};
+var suspConfig = {};
 suspConfig.lowerA = lowerA
 suspConfig.upperA = upperA
 suspConfig.chassis = chassis
 suspConfig.upright = upright
 suspConfig.tierodlength = tierodlength
 suspConfig.rackY = rackY
+suspConfig.camber_offset = 0.2
 
+suspConfig.steering_ratio = .0254/(180.0)
+
+//update the HTML to reflect this initial config.
 updateSuspTextBoxes(suspConfig)
 
 
@@ -51,6 +55,148 @@ var autosolve_checkbox = document.getElementById("autoSolve")
 var wheelpos = 0;
 var chassisroll = 0;
 var rackdisp = 0;
+
+
+
+let inconsolata;
+function preload() {
+  inconsolata = loadFont('assets/Inconsolata.otf');
+}
+
+/////////////////////////////////////////
+
+function setup() {
+
+  var cnv = createCanvas(windowWidth/2, 500,WEBGL);
+  cnv.parent('sketch-holder')
+  initLineChart([],"Choose plot options below, then hit 'generate plot' ","Independent variable","Dependent Variable")
+  susp = new Suspension(lowerA,upperA,upright,chassis,tierodlength);
+  susp.draw()
+  print(wheelslider)
+  print(autosolve_checkbox)
+  camera(-1000,-1000,2500,-500,0,0,0,1,0)
+
+  textFont(inconsolata);
+  textSize(10);
+  textAlign(CENTER, TOP);
+}
+
+function draw() {
+  tnow = millis()/1000.0
+  dt = tnow-told
+  told = tnow
+  background(50);
+  orbitControl();
+  // setAttributes('antialias', true);
+  // frustum(-width/2, width/2, -height/2, height, 0, max(width, height))
+  fill(0)
+  stroke(0)
+
+  
+
+
+  if(!simulating){
+      //see if we want auto-solve on
+      //use the slider to update the wheel position.
+      susp.uprightGlobal[2] = wheelpos-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0
+      susp.chassisGlobal[3] = chassisroll
+      susp.chassis[4][1] = rackY+rackdisp
+      var autosolve_now = autosolve_checkbox.checked;
+      if(autosolve_now){
+          susp.solve();
+      }
+
+      susp.draw();
+  }
+  else{
+      
+      ////we are supposed to be running an automatic simulation now.
+      simstr = "simulating"
+
+      if(globalXData.length<=simlength){
+        // simstr+="."
+        // print(simstr)
+        // print(globalXData.length)
+        ////check to see what the independent variable is
+        simxtype = document.getElementById("chart_x_axis").value;
+        // print("Read Sim X type: "+simxtype)
+        if(simxtype == "Jounce"){
+          //now we set the simulation's input to the last element in the input array
+          susp.uprightGlobal[2] = globalXData.slice(-1)[0]-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0 //TODO
+          if(globalXData.length==1){
+            susp.solve();
+          }
+        }
+        else if(simxtype=="Roll"){
+          susp.chassisGlobal[3] = globalXData.slice(-1)[0]
+        }
+        else if(simxtype=="HandWheel"){
+          print(suspConfig.steering_ratio*globalXData.slice(-1)[0])
+          susp.chassis[4][1] = suspConfig.steering_ratio*globalXData.slice(-1)[0] + suspConfig.rackY
+        }
+        else{
+          simulating = false;
+          print("Simtype Not Supported (independent)")
+        }
+        ////now the simulation should be set up to solve with correct input.
+        susp.update();
+
+        ///// now the simulation should be updated. Add the desired output to the global Y data vector
+        simytype = document.getElementById("chart_y_axis").value;
+        if(simytype== "Camber"){
+          globalYData.push(-(susp.uprightGlobal[3]%(2*PI)))
+        }
+        else if(simytype == "Steer"){
+          globalYData.push((susp.uprightGlobal[5]%(2*PI)))
+        }
+        else{
+          print("Simtype Not Supported (dependent)")
+        }
+        //add a new element to globalXdata if we're not at the end of the simulation.
+        //if(!(globalXData.length==simlength)){
+        globalXData.push(globalXData.slice(-1)[0]+input_increment);
+        //}
+      }
+      //turn off sim
+      else{
+        //this means that the simulation just ended. turn these into data for the chart.
+        simulating = false;
+        newChartData = generateData(globalXData,globalYData);
+        suspPlot.data.datasets[0].data = newChartData;
+        suspPlot.options.scales.yAxes[0].scaleLabel.labelString = simytype;
+        suspPlot.options.scales.xAxes[0].scaleLabel.labelString = simxtype;
+        suspPlot.options.title.text = simytype+" vs. "+simxtype;
+        document.getElementById("plotfilename").value = simytype+"_vs_"+simxtype
+        suspPlot.update();
+      }
+  }
+
+
+
+
+
+
+
+/////// END DRAW ////////
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //callbacks for these functions:
@@ -82,14 +228,66 @@ function saveConfig(){
 
 }
 
+
+//this is the callback fro the load config button.
 function loadConfig(){
+  // document.getElementById('attachment').click();
+  const content = document.querySelector('.content');
+  const [file] = document.querySelector('input[type=file]').files;
+  const reader = new FileReader()
+  reader.addEventListener("load", () => {
+    // this will then display a text file
+    print("NEW CONFIG LOADING:")
+    print(reader.result);
+    newConfig = JSON.parse(reader.result)
+    updateSuspTextBoxes(newConfig)
+    updateGeometry()
+
+  }, false);
+
+  if (file) {
+    reader.readAsText(file);
+  }
+
+
   
 }
 
+
+
+//this is the callback for the update button.
 function updateGeometry(){
-  suspConfig = updateSuspTextBoxes();
+  //zero out all sliders TODO
+  document.getElementById("wheelslider").value = 0
+  document.getElementById("rackslider").value = 0
+  document.getElementById("rollslider").value = 0
+  wheelpos = 0
+  rackdisp = 0
+  chassisroll = 0
+
+  //get a new global suspension config.
+  suspConfig = getSuspPointsFromHTML();
+  //feed new config into new globals
+  newGlobals = guessGlobalsFromConfig(suspConfig);
+
+  //update suspension object as appropriate
+  //susp is a global variable. Not sure this is really the right way to do this...
+  susp.upperA = suspConfig.upperA
+  susp.lowerA = suspConfig.lowerA
+  susp.chassis = suspConfig.chassis 
+  susp.upright = suspConfig.upright
+  susp.tierodlength = suspConfig.tierodlength
+  susp.chassisGlobal = newGlobals.chassisGlobal
+  susp.upperAGlobal = newGlobals.upperAGlobal
+  susp.lowerAGlobal = newGlobals.lowerAGlobal
+  susp.uprightGlobal = newGlobals.uprightGlobal
+  //now solve suspension
+  susp.solve()
+
 }
 
+
+//this is a utility function to download config as a JSON text file.
 function downloadJSON(content, fileName) {
     var a = document.createElement("a");
     var file = new Blob([content], {type: 'text/plain'});
@@ -98,6 +296,8 @@ function downloadJSON(content, fileName) {
     a.click();
 }
 
+
+///this takes a JSON suspension config and updates the HTML textboxes to match.
 function updateSuspTextBoxes(myConfig){
     //lower a arm rear in chassis frame
     document.getElementById("lar-x").value = myConfig.chassis[0][0]
@@ -105,8 +305,8 @@ function updateSuspTextBoxes(myConfig){
     document.getElementById("lar-z").value = myConfig.chassis[0][2]
     //lower a arm front in chassis frame
     document.getElementById("laf-x").value = myConfig.chassis[1][0]
-    document.getElementById("laf-y").value = myConfig.chassis[1][0]
-    document.getElementById("laf-z").value = myConfig.chassis[1][0]
+    document.getElementById("laf-y").value = myConfig.chassis[1][1]
+    document.getElementById("laf-z").value = myConfig.chassis[1][2]
     //upper a arm rear in chassis frame
     document.getElementById("uar-x").value = myConfig.chassis[2][0]
     document.getElementById("uar-y").value = myConfig.chassis[2][1]
@@ -144,8 +344,16 @@ function updateSuspTextBoxes(myConfig){
     document.getElementById("tierod-length").value = myConfig.tierodlength
     document.getElementById("camber-offset").value = myConfig.camber_offset
 
+    document.getElementById("urwc-x").value = myConfig.upright[3][0]
+    document.getElementById("urwc-y").value = myConfig.upright[3][1]
+    document.getElementById("urwc-z").value = myConfig.upright[3][2]
+
+    document.getElementById("steering-ratio").value = myConfig.steering_ratio
+
 }
 
+
+//this creates a JSON suspension config object.
 function getSuspPointsFromHTML(){
   //get values one at a time from the text boxes
 
@@ -187,6 +395,12 @@ function getSuspPointsFromHTML(){
   var urtr_y = float(document.getElementById("urtr-y").value)
   var urtr_z = float(document.getElementById("urtr-z").value)
 
+  //upright wheel center
+  //upright tie rod point
+  var urwc_x = float(document.getElementById("urwc-x").value)
+  var urwc_y = float(document.getElementById("urwc-y").value)
+  var urwc_z = float(document.getElementById("urwc-z").value)
+
   //chassis tie rod point
   var ctr_x = float(document.getElementById("ctr-x").value)
   var ctr_y = float(document.getElementById("ctr-y").value)
@@ -197,6 +411,8 @@ function getSuspPointsFromHTML(){
   //camber offset
   var camber_offset = float(document.getElementById("camber-offset").value)
 
+  var steering_ratio = float(document.getElementById("steering-ratio").value)
+
   const newConfig = {}
 
   //turn this into local coordinates
@@ -206,20 +422,44 @@ function getSuspPointsFromHTML(){
 
   newConfig.lowerA = [[0,0,0],[LA12,0,0],[lalbj_x,lalbj_y,lalbj_z]]
   newConfig.upperA = [[0,0,0],[UA12,0,0],[uaubj_x,uaubj_y,uaubj_z]]
-  newConfig.upright = [[urlbj_x,urlbj_y,urlbj_z],[urubj_x,urubj_y,urubj_z],[urtr_x,urtr_y,urtr_z],[camber_offset,0,0]]
+  newConfig.upright = [[urlbj_x,urlbj_y,urlbj_z],[urubj_x,urubj_y,urubj_z],[urtr_x,urtr_y,urtr_z],[urwc_x,urwc_y,urwc_z],[-camber_offset,0,0]]
   newConfig.rackY = ctr_y
   newConfig.tierodlength = trl
+  newConfig.camber_offset = camber_offset
+  newConfig.steering_ratio = steering_ratio
 
   return newConfig
 }
 
 
+//this takes a suspension config and produces rough guesses
+//this function should only be called when geometry is changed. 
 function guessGlobalsFromConfig(myConfig){
 //this function creates rough guesses for the suspension components' 
 //global position/orientation vectors based on a config.
 
+  // //now create global coordinates for each body
+  // //format [X,Y,Z,r,p,y] for each body
+  // var chassisGlobal= [0,0,0,0,0,0]
+  // var lowerAGlobal = [chassisGlobal[0]+chassis[0][0],chassisGlobal[1]+chassis[0][1],chassisGlobal[2]+chassis[0][2]-.09,0,0,0]
+  // var upperAGlobal = [chassisGlobal[0]+chassis[2][0],chassisGlobal[1]+chassis[2][1],chassisGlobal[2]+chassis[2][2]+.09,0.05,0,0]
+  // var uprightGlobal = [lowerAGlobal[0]+.15,lowerAGlobal[1]+.4,lowerAGlobal[2]-.09,.25,0,0]
+
+  const globals = {}
+  globals.chassisGlobal = [0,0,0,0,0,0]
+  const vertOffset = (myConfig.chassis[2][2]-myConfig.chassis[0][2])/2.0
+  globals.lowerAGlobal = [globals.chassisGlobal[0]+myConfig.chassis[0][0],globals.chassisGlobal[1]+myConfig.chassis[0][1],globals.chassisGlobal[2]+myConfig.chassis[0][2]-vertOffset,0,0,0]
+  //use rise/run here of difference between upright height and chassis height, and run from a arm length.
+  upperA_angle_approx = math.atan(((myConfig.upright[1][2]-myConfig.upright[0][2]) - (myConfig.chassis[2][2]-myConfig.chassis[0][2]))/myConfig.upperA[2][1])
+  globals.upperAGlobal = [globals.chassisGlobal[0]+myConfig.chassis[2][0],globals.chassisGlobal[1]+myConfig.chassis[2][1],globals.chassisGlobal[2]+myConfig.chassis[2][2]+vertOffset,upperA_angle_approx,0,0]
+  //use rise/run again.
+  kingpin_angle_approx = math.atan( (myConfig.lowerA[2][1]-myConfig.upperA[2][1])/(myConfig.upright[1][2]-myConfig.upright[0][2])   )
+  print("approx new kingpin: "+str(kingpin_angle_approx))
+  print("approx upper a-arm: "+str(upperA_angle_approx))
+  globals.uprightGlobal = [globals.lowerAGlobal[0]+myConfig.lowerA[1][0]/2.0,globals.lowerAGlobal[1]+myConfig.lowerA[2][1],globals.lowerAGlobal[2]-vertOffset,kingpin_angle_approx,0,0] //angle guess was .25
 
 
+  return globals
 }
 
 
@@ -266,24 +506,6 @@ function range(start, stop, step) {
     return result;
 };
 
-
-function runJounceSim(min,max){
-  /// assume for now it's just jounce.... but in future, check to see what type of plot we want.
-
-}
-
-function plotCallback(){
-  //// check drop-down to see what plot we want
-
-  //// first run sim for data
-
-  /// then put data into format for chart
-
-  /// then update chart data, title, plot, whatever
-
-
-  /// then update the chart.
-}
 
 function savePlotData(){
 
@@ -410,126 +632,6 @@ function initLineChart(data, myTitle, xlabel, ylabel) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////////////////
-
-function setup() {
-
-  var cnv = createCanvas(windowWidth/2, 500,WEBGL);
-  cnv.parent('sketch-holder')
-  initLineChart([],"Choose plot options below, then hit 'generate plot' ","Independent variable","Dependent Variable")
-  susp = new Suspension(lowerA,upperA,upright,chassis,tierodlength);
-  susp.draw()
-  print(wheelslider)
-  print(autosolve_checkbox)
-  camera(-1000,-1000,2500,-500,0,0,0,1,0)
-}
-
-function draw() {
-  tnow = millis()/1000.0
-  dt = tnow-told
-  told = tnow
-  background(50);
-  orbitControl();
-  // setAttributes('antialias', true);
-  // frustum(-width/2, width/2, -height/2, height, 0, max(width, height))
-  fill(0)
-  stroke(0)
-
-  
-
-
-  if(!simulating){
-      //see if we want auto-solve on
-      //use the slider to update the wheel position.
-      susp.uprightGlobal[2] = wheelpos-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0
-      susp.chassisGlobal[3] = chassisroll
-      susp.chassis[4][1] = rackY+rackdisp
-      var autosolve_now = autosolve_checkbox.checked;
-      if(autosolve_now){
-          susp.solve();
-      }
-
-      susp.draw();
-  }
-  else{
-      
-      ////we are supposed to be running an automatic simulation now.
-      simstr = "simulating"
-
-      if(globalXData.length<=simlength){
-        // simstr+="."
-        // print(simstr)
-        // print(globalXData.length)
-        ////check to see what the independent variable is
-        simxtype = document.getElementById("chart_x_axis").value;
-        // print("Read Sim X type: "+simxtype)
-        if(simxtype == "Jounce"){
-          //now we set the simulation's input to the last element in the input array
-          susp.uprightGlobal[2] = globalXData.slice(-1)[0]-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0 //TODO
-          if(globalXData.length==1){
-            susp.solve();
-          }
-        }
-        else if(simxtype="Roll"){
-          susp.chassisGlobal[3] = globalXData.slice(-1)[0]
-        }
-        else{
-          simulating = false;
-          print("Simtype Not Supported (independent)")
-        }
-        ////now the simulation should be set up to solve with correct input.
-        susp.update();
-
-        ///// now the simulation should be updated. Add the desired output to the global Y data vector
-        simytype = document.getElementById("chart_y_axis").value;
-        if(simytype== "Camber"){
-          globalYData.push(-(susp.uprightGlobal[3]%(2*PI)))
-        }
-        else if(simytype == "Steer"){
-          globalYData.push((susp.uprightGlobal[5]%(2*PI)))
-        }
-        else{
-          print("Simtype Not Supported (dependent)")
-        }
-        //add a new element to globalXdata if we're not at the end of the simulation.
-        //if(!(globalXData.length==simlength)){
-        globalXData.push(globalXData.slice(-1)[0]+input_increment);
-        //}
-      }
-      //turn off sim
-      else{
-        //this means that the simulation just ended. turn these into data for the chart.
-        simulating = false;
-        newChartData = generateData(globalXData,globalYData);
-        suspPlot.data.datasets[0].data = newChartData;
-        suspPlot.options.scales.yAxes[0].scaleLabel.labelString = simytype;
-        suspPlot.options.scales.xAxes[0].scaleLabel.labelString = simxtype;
-        suspPlot.options.title.text = simytype+" vs. "+simxtype;
-        document.getElementById("plotfilename").value = simytype+"_vs_"+simxtype
-        suspPlot.update();
-      }
-  }
-
-
-
-
-
-
-
-/////// END DRAW ////////
-}
-
 function varcopy(x) {
     return JSON.parse( JSON.stringify(x) );
 }
@@ -577,7 +679,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //constraint values
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .0005
-  this.iter_limit = 100
+  this.iter_limit = 500
   this.itercount = 0
   
 
@@ -903,12 +1005,48 @@ this.draw = function(){
   stroke(color(255,0,0))
   // sphere(.01)
   line(0,0,0,100,0,0)
+  push()
+  translate(100,0,0)
+  fill(color(255,0,0))
+  stroke(255)
+  textSize(100)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("X",0,-100)
+  pop()
+
+
   stroke(color(0,255,0))
   // sphere(.01)
   line(0,0,0,0,100,0)
+  push()
+  translate(0,100,0)
+  fill(color(0,255,0))
+  stroke(255)
+  textSize(100)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("Y",0,-100)
+  pop()
+
+
   stroke(color(0,0,255))
   // sphere(.01)
   line(0,0,0,0,0,-100)
+  push()
+  translate(0,0,-100)
+  fill(color(0,0,255))
+  stroke(255)
+  textSize(100)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("Z",0,-100)
+  pop()
+
+
   pop()
 
 
@@ -979,12 +1117,46 @@ this.drawUpright = function(){
   stroke(color(255,0,0))
   // sphere(.01)
   line(0,0,0,.05,0,0)
+  textFont(inconsolata)
+  push()
+  translate(.05,0,0)
+  fill(color(255,0,0))
+  stroke(255)
+  textSize(0.025)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("X",0,-0.03)
+  pop()
   stroke(color(0,255,0))
   // sphere(.01)
   line(0,0,0,0,.05,0)
+  push()
+  translate(0,.05,0)
+  fill(color(0,255,0))
+  stroke(255)
+  textSize(0.025)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("Y",0,-0.03)
+  pop()
+
+
   stroke(color(0,0,255))
   // sphere(.01)
   line(0,0,0,0,0,-.05)
+  push()
+  translate(0,0,-.05)
+  fill(color(0,0,255))
+  stroke(255)
+  textSize(0.025)
+  rotateZ(PI/2)
+  rotateX(PI/2)
+  rotateY(PI)
+  text("Z",0,-0.03)
+  pop()
+
   pop()
   
   //draw kingpin axis
@@ -994,10 +1166,22 @@ this.drawUpright = function(){
   //draw line from lower BJ to tie rod
   line(points[1][0],points[1][1],-points[1][2],points[2][0],points[2][1],-points[2][2])
 
+  texts = ["urlbj","urubj","urtr","urwc"]
   for(let k = 0;k<4;k++){
     push()
     translate(points[k][0],points[k][1],-points[k][2])
     sphere(0.005)
+        
+    textFont(inconsolata)
+    fill(color(255,255,0))
+    stroke(255)
+    textSize(0.025)
+    rotateZ(PI/2)
+    rotateX(PI/2)
+    rotateY(PI)
+    text(texts[k],0,-0.03)
+
+
     pop()
   }
 
@@ -1033,8 +1217,10 @@ this.drawTieRod = function(){
     sphere(0.005)
     pop()
     push()
+    stroke(color(255,0,255))
     translate(upoints[2][0],upoints[2][1],-upoints[2][2])
     sphere(0.005)
+    
     pop()
 
 
@@ -1051,10 +1237,20 @@ this.drawChassis = function(){
   cpoints2 = this.getDrawPoints(this.chassisGlobal,chassis2)
   stroke(color(180,180,180))
 
+  texts = ["lar","laf","uar","uaf","ctr"]
   for(let k=0;k<cpoints.length;k++){
     push()
     translate(cpoints[k][0],cpoints[k][1],-cpoints[k][2])
     sphere(0.004)
+    textFont(inconsolata)
+    fill(color(255,255,0))
+    stroke(255)
+    textSize(0.025)
+    rotateZ(PI/2)
+    rotateX(PI/2)
+    rotateY(PI)
+    text(texts[k],0,-0.03)
+
     pop()
   }
   //draw line from vehicle center to RLA

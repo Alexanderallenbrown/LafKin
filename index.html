@@ -76,6 +76,7 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
                 <select name="x_axis" id="chart_x_axis">
                   <option value="Jounce">Jounce (m)</option>
                   <option value="Roll">Roll (rad)</option>
+                  <option value="HandWheel">Handwheel (deg)</option>
                 </select>
                 <br>
                 min/increment/max
@@ -111,14 +112,14 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
 
 
 <div class="container" style="border: solid 1px grey; border-radius: 10px; text-align: center; width: 90vw;margin-left: auto; margin-right: auto">
-  <br>
-  Note: This section is not yet functional. Work in progress!
-  <br>
-<h2>Geometry: Enter your geometry Below <br>  <br>
-<button onclick="saveConfig()">Save Suspension Config</button>  
-<button onclick="loadConfig()">Load Suspension Config</button>  <br>
-</h2>
-Save Filename: <textarea id="configfilename" name="configfilename" rows=1 cols="25">suspdata</textarea> .txt <br> 
+<h2>Geometry: Enter your geometry Below </h2>
+  Load Config: <input type="file" onchange="loadConfig()"><br>
+<!-- <button onclick="saveConfig()">Save Suspension Config</button>  
+ --><!-- <button onclick="loadConfig()">Load Suspension Config</button>   -->
+<br>
+Save Current Config: <br>
+Filename: <textarea id="configfilename" name="configfilename" rows=1 cols="25">suspdata</textarea> .txt <br> 
+<button onclick="saveConfig()">Save</button> 
 <br>
 <table class = "center" style="width: 75%; border: 1px solid black; border-radius: 10px;margin-left: auto; margin-right: auto">
 <tbody>
@@ -170,12 +171,21 @@ Save Filename: <textarea id="configfilename" name="configfilename" rows=1 cols="
 <td style="height: 23px; width: 51.6446%; text-align: center;">C-TR (Chassis frame)&nbsp;</td>
 <td style="height: 23px; width: 47.9802%;">x: <textarea id="ctr-x" name="ctr-x" rows="1" cols="10">0</textarea> y: <textarea id="ctr-y" name="ctr-y" rows="1" cols="10">0</textarea> z: <textarea id="ctr-z" name="ctr-z" rows="1" cols="10">0</textarea></td>
 </tr>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">WC (upright frame)&nbsp;</td>
+<td style="height: 23px; width: 47.9802%;">x: <textarea id="urwc-x" name="urwc-x" rows="1" cols="10">0</textarea> y: <textarea id="urwc-y" name="urwc-y" rows="1" cols="10">0</textarea> z: <textarea id="urwc-z" name="urwc-z" rows="1" cols="10">0</textarea></td>
+</tr>
 <tr style="height: 23px;">
 <td style="height: 23px; width: 51.6446%; text-align: center;">Tie Rod Length</td>
 <td style="height: 23px; width: 47.9802%; text-align: center"><textarea id="tierod-length" name="trl" rows="1" cols="10">0</textarea></td>
 <tr style="height: 23px;">
 <td style="height: 23px; width: 51.6446%; text-align: center;">Upright Camber Offset (rad)</td>
 <td style="height: 23px; width: 47.9802%; text-align: center"><textarea id="camber-offset" name="min" rows="1" cols="10">0</textarea></td>
+</tr>
+<tr style="height: 23px;">
+<td style="height: 23px; width: 51.6446%; text-align: center;">Steering Ratio (rack/HW)</td>
+<td style="height: 23px; width: 47.9802%; text-align: center"><textarea id="steering-ratio" name="min" rows="1" cols="10">0</textarea></td>
 </tr>
 </tr>
 </tbody>
@@ -186,8 +196,6 @@ Save Filename: <textarea id="configfilename" name="configfilename" rows=1 cols="
 <br>
 <!-- DivTable.com -->
 </div>
-
-
 
 <script src="Front_Susp.js"></script>
 </body>
