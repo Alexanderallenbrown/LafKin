@@ -224,7 +224,7 @@ function windowResized() {
 
 function saveConfig(){
   myConfig = getSuspPointsFromHTML()
-  downloadJSON(JSON.stringify(myConfig),document.getElementById("configfilename").value+".txt")
+  downloadJSON(JSON.stringify(myConfig,null,"\t"),document.getElementById("configfilename").value+".txt")
 
 }
 
