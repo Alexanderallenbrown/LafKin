@@ -679,7 +679,7 @@ function Suspension(lowerA,upperA,upright,chassis,tierodlength){
   //constraint values
   this.eps = .001 //this is the perturbation size
   this.resid_thresh = .0005
-  this.iter_limit = 500
+  this.iter_limit = 100
   this.itercount = 0
   
 
