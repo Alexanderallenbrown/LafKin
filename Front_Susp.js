@@ -10,11 +10,13 @@
 //in local coords. y left, x fwd, z up.
 // [x1,y1,z1,x2,y2,z2,x3,y3,z3]
 // point 1 closest to rear, point 3 kingpin
-//origin of an a-arm is fixed to rear inner point
-const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
+//origin of an a-arm is fixed to rear inner point,
+
+//rear, front, balljoint, pushrod
+const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0],[.15,.37,.01]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
-//for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
-const chassis = [[0,.2,-.09],[.3,.2,-.09],[0,0.2,.09],[.3,0.2,.09],[-.05,0.22,-.09]]
+//for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn,bellcrank pivot, shock mount 
+const chassis = [[0,.2,-.09],[.3,.2,-.09],[0,0.2,.09],[.3,0.2,.09],[-.05,0.22,-.09],[.15,0,.12],[.15,-.1,.12]]
 const rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
@@ -22,6 +24,8 @@ const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 const tierodlength = 0.38
 
 var sinphi = 0
+//pivot, pushrod, shock, axis.
+const bellcrank = [[0,0,0],[0,.03,0],[0,0,.03],[1,0,0]]
 
 //create a global variable to hold the suspension object.
 var suspConfig = {};
@@ -34,6 +38,7 @@ suspConfig.rackY = rackY
 suspConfig.camber_offset = 0.2
 
 suspConfig.steering_ratio = .0254/(180.0)
+suspConfig.bellcrank = bellcrank
 
 //update the HTML to reflect this initial config.
 updateSuspTextBoxes(suspConfig)
@@ -349,6 +354,32 @@ function updateSuspTextBoxes(myConfig){
     document.getElementById("urwc-z").value = myConfig.upright[3][2]
 
     document.getElementById("steering-ratio").value = myConfig.steering_ratio
+    document.getElementById("pushrod-length").value = myConfig.pushrod_length
+
+    document.getElementById("prla-x").value = myConfig.lowerA[3][0]
+    document.getElementById("prla-y").value = myConfig.lowerA[3][1]
+    document.getElementById("prla-z").value = myConfig.lowerA[3][2]
+
+    document.getElementById("prc-x").value = myConfig.chassis[5][0]
+    document.getElementById("prc-y").value = myConfig.chassis[5][1]
+    document.getElementById("prc-z").value = myConfig.chassis[5][2]
+
+    document.getElementById("sc-x").value = myConfig.chassis[6][0]
+    document.getElementById("sc-y").value = myConfig.chassis[6][1]
+    document.getElementById("sc-z").value = myConfig.chassis[6][2]
+
+    document.getElementById("sbc-x").value = myConfig.bellcrank[2][0]
+    document.getElementById("sbc-y").value = myConfig.bellcrank[2][1]
+    document.getElementById("sbc-z").value = myConfig.bellcrank[2][2]
+
+    document.getElementById("prbc-x").value = myConfig.bellcrank[1][0]
+    document.getElementById("prbc-y").value = myConfig.bellcrank[1][1]
+    document.getElementById("prbc-z").value = myConfig.bellcrank[1][2]
+
+    document.getElementById("bcaxis-x").value = myConfig.bellcrank[3][0]
+    document.getElementById("bcaxis-y").value = myConfig.bellcrank[3][1]
+    document.getElementById("bczxis-z").value = myConfig.bellcrank[3][2]
+
 
 }
 
@@ -413,10 +444,41 @@ function getSuspPointsFromHTML(){
 
   var steering_ratio = float(document.getElementById("steering-ratio").value)
 
+
+  var pushrod_length = float(document.getElementById("pushrod-length").value)
+
+  var prla_x = float(document.getElementById("prla-x").value)  
+  var prla_y = float(document.getElementById("prla-y").value)  
+  var prla_z = float(document.getElementById("prla-z").value)  
+
+  var prc_x = float(document.getElementById("prc-x").value)
+  var prc_y = float(document.getElementById("prc-y").value)
+  var prc_z = float(document.getElementById("prc-z").value)
+
+  var sc_x = float(document.getElementById("sc-x").value)
+  var sc_y = float(document.getElementById("sc-y").value)
+  var sc_z = float(document.getElementById("sc-z").value)
+
+  var sbc_x = float(document.getElementById("sbc-x").value)  
+  var sbc_y = float(document.getElementById("sbc-y").value)  
+  var sbc_z = float(document.getElementById("sbc-z").value)  
+
+  var prbc_x = float(document.getElementById("prbc-x").value)  
+  var prbc_y = float(document.getElementById("prbc-y").value)  
+  var prbc_z = float(document.getElementById("prbc-z").value)  
+
+  var bcaxis_x = float(document.getElementById("bcaxis-x").value)  
+  var bcaxis_y = float(document.getElementById("bcaxis-y").value)  
+  var bcaxis_z = float(document.getElementById("bczxis-z").value)    
+
+
+
+
+
   const newConfig = {}
 
   //turn this into local coordinates
-  newConfig.chassis = [[lar_x,lar_y,lar_z],[laf_x,laf_y,laf_z],[uar_x,uar_y,uar_z],[uaf_x,uaf_y,uaf_z],[ctr_x,ctr_y,ctr_z]]
+  newConfig.chassis = [[lar_x,lar_y,lar_z],[laf_x,laf_y,laf_z],[uar_x,uar_y,uar_z],[uaf_x,uaf_y,uaf_z],[ctr_x,ctr_y,ctr_z],[],[]]
   LA12 = math.sqrt(math.pow(newConfig.chassis[0][0]-newConfig.chassis[1][0],2) + math.pow(newConfig.chassis[0][1]-newConfig.chassis[1][1],2)+math.pow(newConfig.chassis[0][2]-newConfig.chassis[1][2],2))
   UA12 = math.sqrt(math.pow(newConfig.chassis[2][0]-newConfig.chassis[3][0],2) + math.pow(newConfig.chassis[2][1]-newConfig.chassis[3][1],2)+math.pow(newConfig.chassis[2][2]-newConfig.chassis[3][2],2))
 
@@ -427,6 +489,8 @@ function getSuspPointsFromHTML(){
   newConfig.tierodlength = trl
   newConfig.camber_offset = camber_offset
   newConfig.steering_ratio = steering_ratio
+
+
 
   return newConfig
 }
