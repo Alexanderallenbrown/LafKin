@@ -122,7 +122,7 @@ function draw() {
         // print("Read Sim X type: "+simxtype)
         if(simxtype == "Jounce"){
           //now we set the simulation's input to the last element in the input array
-          susp.uprightGlobal[2] = globalXData.slice(-1)[0]-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0 //TODO
+          susp.uprightGlobal[2] = globalXData.slice(-1)[0]+suspConfig.chassis[0][2] //TODO
           if(globalXData.length==1){
             susp.solve();
           }
