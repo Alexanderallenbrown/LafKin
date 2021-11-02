@@ -267,6 +267,7 @@ function updateGeometry(){
 
   //get a new global suspension config.
   suspConfig = getSuspPointsFromHTML();
+  print("got: " +str(suspConfig.chassis[4][1])+" for ctr-y")
   //feed new config into new globals
   newGlobals = guessGlobalsFromConfig(suspConfig);
 
@@ -283,6 +284,8 @@ function updateGeometry(){
   susp.uprightGlobal = newGlobals.uprightGlobal
   //now solve suspension
   susp.solve()
+  
+  print("susp object says: "+str(susp.chassis[4][1])+" for ctr-y")
 
 }
 
