@@ -22,6 +22,7 @@ const rackY = chassis[4][1]
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 
 const tierodlength = 0.38
+const pushrod_length = .5
 
 var sinphi = 0
 //pivot, pushrod, shock, axis.
@@ -39,6 +40,7 @@ suspConfig.camber_offset = 0.2
 
 suspConfig.steering_ratio = .0254/(180.0)
 suspConfig.bellcrank = bellcrank
+suspConfig.pushrod_length = pushrod_length
 
 //update the HTML to reflect this initial config.
 updateSuspTextBoxes(suspConfig)
@@ -378,7 +380,7 @@ function updateSuspTextBoxes(myConfig){
 
     document.getElementById("bcaxis-x").value = myConfig.bellcrank[3][0]
     document.getElementById("bcaxis-y").value = myConfig.bellcrank[3][1]
-    document.getElementById("bczxis-z").value = myConfig.bellcrank[3][2]
+    document.getElementById("bcaxis-z").value = myConfig.bellcrank[3][2]
 
 
 }
@@ -469,7 +471,7 @@ function getSuspPointsFromHTML(){
 
   var bcaxis_x = float(document.getElementById("bcaxis-x").value)  
   var bcaxis_y = float(document.getElementById("bcaxis-y").value)  
-  var bcaxis_z = float(document.getElementById("bczxis-z").value)    
+  var bcaxis_z = float(document.getElementById("bcaxis-z").value)    
 
 
 
