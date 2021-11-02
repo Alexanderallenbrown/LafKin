@@ -15,7 +15,7 @@ const lowerA = [[0,0,0],[.3,0,0],[.15,.4,0]]
 const upperA = [[0,0,0],[.3,0,0],[.15,.35,0]]
 //for chassis, p1 lower a p1, p2 lower a, p3 upper a p1, p4 upper a p2, p5 tie rod conn
 const chassis = [[0,.2,-.09],[.3,.2,-.09],[0,0.2,.09],[.3,0.2,.09],[-.05,0.22,-.09]]
-const rackY = chassis[4][1]
+var rackY = chassis[4][1]
 //for upright, p1 lower A-arm conn, p2 upper A-arm conn, p3 tie rod conn, wheel center loc,wheel angular offset
 const upright = [[0,0,0],[0,0,0.2],[-0.1,0,0.1],[0,4*.0254,.1],[-.2,0,0]]
 
@@ -98,9 +98,9 @@ function draw() {
   if(!simulating){
       //see if we want auto-solve on
       //use the slider to update the wheel position.
-      susp.uprightGlobal[2] = wheelpos-(suspConfig.chassis[2][2]-suspConfig.chassis[0][2])/2.0
+      susp.uprightGlobal[2] = wheelpos+(suspConfig.chassis[0][2])
       susp.chassisGlobal[3] = chassisroll
-      susp.chassis[4][1] = rackY+rackdisp
+      susp.chassis[4][1] = suspConfig.rackY+rackdisp
       var autosolve_now = autosolve_checkbox.checked;
       if(autosolve_now){
           susp.solve();
@@ -449,14 +449,14 @@ function guessGlobalsFromConfig(myConfig){
   // var uprightGlobal = [lowerAGlobal[0]+.15,lowerAGlobal[1]+.4,lowerAGlobal[2]-.09,.25,0,0]
 
   const globals = {}
-  globals.chassisGlobal = [0,0,0,0,0,0]
+  globals.chassisGlobal = [myConfig.chassis[0][0],myConfig.chassis[0][1],myConfig.chassis[0][2],0,0,0]
   const vertOffset = (myConfig.chassis[2][2]-myConfig.chassis[0][2])/2.0
   globals.lowerAGlobal = [globals.chassisGlobal[0]+myConfig.chassis[0][0],globals.chassisGlobal[1]+myConfig.chassis[0][1],globals.chassisGlobal[2]+myConfig.chassis[0][2]-vertOffset,0,0,0]
   //use rise/run here of difference between upright height and chassis height, and run from a arm length.
   upperA_angle_approx = math.atan(((myConfig.upright[1][2]-myConfig.upright[0][2]) - (myConfig.chassis[2][2]-myConfig.chassis[0][2]))/myConfig.upperA[2][1])
   globals.upperAGlobal = [globals.chassisGlobal[0]+myConfig.chassis[2][0],globals.chassisGlobal[1]+myConfig.chassis[2][1],globals.chassisGlobal[2]+myConfig.chassis[2][2]+vertOffset,upperA_angle_approx,0,0]
   //use rise/run again.
-  kingpin_angle_approx = math.atan( (myConfig.lowerA[2][1]-myConfig.upperA[2][1])/(myConfig.upright[1][2]-myConfig.upright[0][2])   )
+  kingpin_angle_approx =0// math.atan( (myConfig.lowerA[2][1]-myConfig.upperA[2][1])/(myConfig.upright[1][2]-myConfig.upright[0][2])   )
   print("approx new kingpin: "+str(kingpin_angle_approx))
   print("approx upper a-arm: "+str(upperA_angle_approx))
   globals.uprightGlobal = [globals.lowerAGlobal[0]+myConfig.lowerA[1][0]/2.0,globals.lowerAGlobal[1]+myConfig.lowerA[2][1],globals.lowerAGlobal[2]-vertOffset,kingpin_angle_approx,0,0] //angle guess was .25
