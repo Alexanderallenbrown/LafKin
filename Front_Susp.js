@@ -972,7 +972,7 @@ this.solve = function(){
     print("iteration limit reached! norm is: "+str(math.max(this.constraints)))
     this.q = varcopy(qsave)
     this.updateGlobalPositionsFromQ(this.q)
-    document.getElementById("sim_msg").innerHTML="Iteration Limit Reached! <br> What you're asking for is impossible <br> Reload page to reset."
+    document.getElementById("sim_msg").innerHTML="Iteration Limit Reached! <br> What you're asking for is impossible <br> Press Reload Config to reset."
   }
   else{
     document.getElementById("sim_msg").innerHTML="Simulation health OK <br> Max solver error: "+parseFloat(math.max(this.constraints)).toPrecision(2)
