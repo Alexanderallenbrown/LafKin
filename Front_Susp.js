@@ -270,6 +270,11 @@ function updateIndependentRange(){
     document.getElementById("input_inc").value="1"
     document.getElementById("input_max").value="180"
   }
+  else if(simxtype=="Roll"){
+    document.getElementById("input_min").value="-.1"
+    document.getElementById("input_inc").value=".001"
+    document.getElementById("input_max").value=".1"
+  }
   else{
     document.getElementById("input_min").value="-.0254"
     document.getElementById("input_inc").value=".001"
