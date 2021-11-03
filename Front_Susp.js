@@ -38,6 +38,8 @@ suspConfig.steering_ratio = .0254/(180.0)
 //update the HTML to reflect this initial config.
 updateSuspTextBoxes(suspConfig)
 
+var savedConfig = varcopy(suspConfig)
+
 
 
 
@@ -141,6 +143,7 @@ function draw() {
         ////now the simulation should be set up to solve with correct input.
         susp.update();
 
+
         ///// now the simulation should be updated. Add the desired output to the global Y data vector
         simytype = document.getElementById("chart_y_axis").value;
         if(simytype== "Camber"){
@@ -154,6 +157,7 @@ function draw() {
         }
         //add a new element to globalXdata if we're not at the end of the simulation.
         //if(!(globalXData.length==simlength)){
+        //if(susp.itercount<susp.iter_limit){
         globalXData.push(globalXData.slice(-1)[0]+input_increment);
         //}
       }
@@ -197,7 +201,12 @@ function draw() {
 
 
 
-
+function reloadConfig(){
+  suspConfig = varcopy(savedConfig)
+  updateSuspTextBoxes(savedConfig)
+  updateGeometry()
+  susp.solve()
+}
 
 //callbacks for these functions:
 wheelslider.oninput = function(){
@@ -240,6 +249,7 @@ function loadConfig(){
     print("NEW CONFIG LOADING:")
     print(reader.result);
     newConfig = JSON.parse(reader.result)
+    savedConfig = newConfig
     updateSuspTextBoxes(newConfig)
     updateGeometry()
 
