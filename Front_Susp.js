@@ -263,6 +263,21 @@ function loadConfig(){
   
 }
 
+function updateIndependentRange(){
+  var simxtype = document.getElementById("chart_x_axis").value;
+  if(simxtype=="HandWheel"){
+    document.getElementById("input_min").value="-180"
+    document.getElementById("input_inc").value="1"
+    document.getElementById("input_max").value="180"
+  }
+  else{
+    document.getElementById("input_min").value="-.0254"
+    document.getElementById("input_inc").value=".001"
+    document.getElementById("input_max").value=".0254"
+  }
+  
+}
+
 
 
 //this is the callback for the update button.

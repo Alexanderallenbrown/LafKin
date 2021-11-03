@@ -73,7 +73,7 @@ Note: The default design is a BAD one. It is intended to show all of the undesir
                 </select>
                 <br>
                 <label for="x_axis">Independent Variable to Plot</label>
-                <select name="x_axis" id="chart_x_axis">
+                <select name="x_axis" id="chart_x_axis" onchange="if (this.selectedIndex>0) updateIndependentRange();">
                   <option value="Jounce">Jounce (m)</option>
                   <option value="Roll">Roll (rad)</option>
                   <option value="HandWheel">Handwheel (deg)</option>
