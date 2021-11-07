@@ -211,6 +211,7 @@ function reloadConfig(){
 //callbacks for these functions:
 wheelslider.oninput = function(){
   wheelpos = this.value/1000.0;
+  document.getElementById("wheelsliderval").innerHTML = str(wheelpos)
   //print("wheel pos udpate: " +str(this.value))
 }
 
@@ -218,11 +219,13 @@ wheelslider.oninput = function(){
 rackslider.oninput = function(){
   rackdisp = this.value/1000.0;
   //print("wheel pos udpate: " +str(this.value))
+  document.getElementById("racksliderval").innerHTML = str(rackdisp)
 }
 
 //callbacks for these functions:
 rollslider.oninput = function(){
   chassisroll = this.value/1000.0;
+  document.getElementById("rollsliderval").innerHTML = str(chassisroll)
   //print("wheel pos udpate: " +str(this.value))
 }
 
