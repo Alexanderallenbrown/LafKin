@@ -219,7 +219,7 @@ wheelslider.oninput = function(){
 rackslider.oninput = function(){
   rackdisp = this.value/1000.0;
   //print("wheel pos udpate: " +str(this.value))
-  document.getElementById("racksliderval").innerHTML = str(rackdisp)
+  document.getElementById("racksliderval").innerHTML = str(rackdisp/suspConfig.steering_ratio)
 }
 
 //callbacks for these functions:
