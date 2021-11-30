@@ -210,14 +210,14 @@ function reloadConfig(){
 
 //callbacks for these functions:
 wheelslider.oninput = function(){
-  wheelpos = this.value/1000.0;
+  wheelpos = this.value/250.0;
   document.getElementById("wheelsliderval").innerHTML = str(wheelpos)
   //print("wheel pos udpate: " +str(this.value))
 }
 
 //callbacks for these functions:
 rackslider.oninput = function(){
-  rackdisp = this.value/500.0;
+  rackdisp = this.value/1000.0;
   //print("wheel pos udpate: " +str(this.value))
   document.getElementById("racksliderval").innerHTML = str(rackdisp/suspConfig.steering_ratio)
 }
